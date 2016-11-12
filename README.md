@@ -1,10 +1,10 @@
-= Sabayon Automated Repository Kit (sark)
+# Sabayon Automated Repository Kit (sark)
 
 This project provides the tools required to automatically build Sabayon
 Entropy repositories, including the
 [Sabayon Community Repositories](https://sabayon.github.io/community-website/).
 
-== Getting Started
+## Getting Started
 
 For local development, you will need some additional dependencies not yet
 available in entropy.
@@ -20,7 +20,7 @@ dependencies locally (no root requured). This will do the following things:
 source scripts/bootstrap.sh
 ```
 
-== Running Tests
+## Running Tests
 
 ```bash
 dzil test
