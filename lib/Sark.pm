@@ -56,6 +56,8 @@ sub load_plugins {
 
 Sark - Sabayon Automatized Repository Kit
 
+Status: =for html <a href="https://travis-ci.org/Sabayon/sark"><img src="https://travis-ci.org/Sabayon/sark.svg?branch=master"></a>
+
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
