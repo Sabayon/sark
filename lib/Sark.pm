@@ -31,7 +31,7 @@ sub emit {
 sub init {
     my $self = shift;
     $self->load_plugins;
-    $self->emit("load");
+    $self->emit("init");
 }
 
 sub load_plugins {
