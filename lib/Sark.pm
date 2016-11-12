@@ -68,7 +68,7 @@ L<Sabayon Community Repositories|https://sabayon.github.io/community-website/>.
 For local development, you will need some additional dependencies not yet
 available in entropy.
 
-If using bash, you can use C<scripts/bootstap.sh> to install all necessary
+If using bash, you can use C<tools/bootstap.sh> to install all necessary
 dependencies locally (no root requured). This will do the following things:
 
 =over
