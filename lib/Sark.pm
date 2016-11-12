@@ -41,7 +41,8 @@ sub load_plugins {
         for (@PLUGINS) {
             my $Plugin = "Sark::Plugin::" . ucfirst($_);
             next if $Loader->load($Plugin);
-            $Plugin->new->register($self);
+            my $inst = $Plugin->new;
+            $inst->register($self) if ( $inst->can("register") );
         }
     }
 }
