@@ -12,7 +12,7 @@ initialize();
 # Testing compile and test events
 subtest "events" => sub {
     Sark->instance->on( "build.compile" =>
-            sub { is( $_[2], "test", "build.complete event received" ) } );
+            sub { is( $_[2], "test", "build.compile event received" ) } );
     Sark->instance->on( "build.test" =>
             sub { is( $_[2], "test", "build.test event received" ) } );
     my $build = Sark::Build->new;
