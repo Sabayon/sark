@@ -2,8 +2,11 @@
 
 Sark - Sabayon Automatized Repository Kit
 
-Status:
-&#x3d;head1 SYNOPSIS
+[![Build Status](https://travis-ci.org/Sabayon/sark.png?branch=master)](https://travis-ci.org/Sabayon/sark)
+
+# VERSION
+
+# SYNOPSIS
 
 # DESCRIPTION
 
