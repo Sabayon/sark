@@ -56,19 +56,42 @@ Sark - Sabayon Automatized Repository Kit
 
 =head1 SYNOPSIS
 
-
 =head1 DESCRIPTION
 
-still nothing serious here :)
+This project provides the tools required to automatically build Sabayon
+Entropy repositories, including the
+L<Sabayon Community Repositories|https://sabayon.github.io/community-website/>.
 
-=head1 STRUCTURE
+=head1 GETTING STARTED
+
+For local development, you will need some additional dependencies not yet
+available in entropy.
+
+If using bash, you can use C<scripts/bootstap.sh> to install all necessary
+dependencies locally (no root requured). This will do the following things:
 
 =over
 
-=item blah
+=item *
 
-=item blablah
+Set environment variables to use C<.bundle> directory to store dependencies
+
+=item *
+
+Install L<App::Cpanminus> and L<Local::Lib>
+
+=item *
+
+Install L<Dist::Zilla>
+
+=item *
+
+Install all C<sark> dependencies
 
 =back
+
+=head1 Running Tests
+
+ dzil test
 
 =cut
