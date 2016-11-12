@@ -13,7 +13,7 @@ BEGIN {
 }
 our $VERSION = 0.01;
 
-has 'plugins' => sub{()};
+has 'plugins' => sub {qw( )};
 
 my $singleton;
 
