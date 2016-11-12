@@ -67,10 +67,12 @@ L<Sabayon Community Repositories|https://sabayon.github.io/community-website/>.
 =head1 GETTING STARTED
 
 For local development, you will need some additional dependencies not yet
-available in entropy.
+available in entropy. If using bash, you can use C<tools/bootstap.sh> to
+install all necessary dependencies locally (no root requured).
 
-If using bash, you can use C<tools/bootstap.sh> to install all necessary
-dependencies locally (no root requured). This will do the following things:
+ source tools/bootstrap.sh
+
+This will take care of the following things:
 
 =over
 
@@ -91,6 +93,9 @@ Install L<Dist::Zilla>
 Install all C<sark> dependencies
 
 =back
+
+To remove any changes made by the bootstrap script, delete the C<.bundle>
+directory in the project root, and restart your shell.
 
 =head1 Running Tests
 
