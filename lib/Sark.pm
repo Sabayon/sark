@@ -28,9 +28,10 @@ sub emit {
 
 }
 
-sub on_load {
+sub init {
     my $self = shift;
     $self->load_plugins;
+    $self->emit("load");
 }
 
 sub load_plugins {
