@@ -15,7 +15,7 @@ Entropy repositories, including the
 For local development, you will need some additional dependencies not yet
 available in entropy.
 
-If using bash, you can use `scripts/bootstap.sh` to install all necessary
+If using bash, you can use `tools/bootstap.sh` to install all necessary
 dependencies locally (no root requured). This will do the following things:
 
 - Set environment variables to use `.bundle` directory to store dependencies
