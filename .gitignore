@@ -1,2 +1,8 @@
+# Generated artefacts
+.bundle
 .build/
 *.bak
+*.kate-swp
+
+# Project workspaces
+*.kdev4
