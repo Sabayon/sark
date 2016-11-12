@@ -4,8 +4,4 @@ perl:
   - "5.16"
   - "5.18"
   - "5.22"
-install: source tools/bootstrap.sh
-script:
-  - git config --global user.email "dummy@travis"
-  - git config --global user.name "dummy"
-  - dzil test
+script: ./tools/run-tests.sh
