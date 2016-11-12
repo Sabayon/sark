@@ -8,8 +8,8 @@ if [ "${TRAVIS_BRANCH}" = "releases" ]; then
   make test
 else
   # otherwise we do a standard dzil full test
-  git config --global user.email "dummy@travis"
-  git config --global user.name "dummy"
+  [[ -z $(git config user.email) ]] && git config --global user.email "dummy@travis"
+  [[ -z $(git config user.name) ]] && git config --global user.name "dummy"
   source ./tools/bootstrap.sh
   dzil test
 fi
