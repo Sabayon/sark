@@ -4,7 +4,9 @@ use Deeme::Obj 'Deeme';
 use Sark::Loader;
 use Locale::TextDomain 'Sark';
 use utf8;
+use Encode;
 use Locale::Messages qw(bind_textdomain_filter);
+use Term::ANSIColor;
 
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
@@ -17,7 +19,11 @@ has 'plugins' => sub {qw( )};
 
 my $singleton;
 
-sub new { $singleton ||= shift->SUPER::new(@_); }
+sub new {
+    $singleton ||= shift->SUPER::new(@_);
+    $singleton->{LOG_LEVEL} = "info" if !$singleton->{LOG_LEVEL};
+    $singleton;
+}
 
 sub emit {
     my $self = shift;
@@ -45,6 +51,60 @@ sub load_plugins {
             $inst->register($self) if ( $inst->can("register") );
         }
     }
+}
+
+sub error {
+    my $self = shift;
+    my @msg  = @_;
+    if ( $self->{LOG_LEVEL} eq "info" ) {
+        print STDERR color 'bold red';
+        print STDERR encode_utf8('☢☢☢ ☛  ');
+        print STDERR color 'bold white';
+        print STDERR join( "\n", @msg ), "\n";
+        print STDERR color 'reset';
+    }
+    elsif ( $self->{LOG_LEVEL} eq "quiet" ) {
+        print join( "\n", @msg ), "\n";
+    }
+}
+
+sub info {
+    my $self = shift;
+
+    my @msg = @_;
+    if ( $self->{LOG_LEVEL} eq "info" ) {
+        print color 'bold green';
+        print encode_utf8('╠ ');
+        print color 'bold white';
+        print join( "\n", @msg ), "\n";
+        print color 'reset';
+    }
+    elsif ( $self->{LOG_LEVEL} eq "quiet" ) {
+        print join( "\n", @msg ), "\n";
+    }
+}
+
+sub notice {
+    my $self = shift;
+    my @msg  = @_;
+    if ( $self->{LOG_LEVEL} eq "info" ) {
+        print STDERR color 'bold yellow';
+        print STDERR encode_utf8('☛ ');
+        print STDERR color 'bold white';
+        print STDERR join( "\n", @msg ), "\n";
+        print STDERR color 'reset';
+    }
+    elsif ( $self->{LOG_LEVEL} eq "quiet" ) {
+        print STDERR join( "\n", @msg ), "\n";
+    }
+}
+
+sub loglevel {
+    my $self = shift;
+
+    $self->{LOG_LEVEL} = $_[0] if $_[0];
+
+    return $self->{LOG_LEVEL};
 }
 
 *instance = \&new;

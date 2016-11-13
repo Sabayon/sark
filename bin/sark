@@ -1,0 +1,52 @@
+#!/usr/bin/perl
+# PODNAME: sark
+
+use warnings;
+use strict;
+use Sark::Application;
+
+my $app = Sark::Application->new( interactive => 0 );
+$app->run();
+
+1;
+
+__END__
+
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+sark
+
+=head1 SYNOPSIS
+
+    $ sark build [repo-name]
+
+    # get help:
+    $ sark help
+    $ sark commands
+
+=head1 DESCRIPTION
+
+sark is the command line interface to the Sabayon Automated Repository Kit
+
+=head1 COMMANDS
+
+=head2 C<build [repo-name]>
+Builds the C<repo-name> repository
+
+=head1 AUTHOR
+
+mudler <optiz0r@sabayon.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is Copyright (c) 2016 by Ettore Di Giacinto, Ben Roberts.
+
+This is free software, licensed under:
+
+  The GNU General Public License, Version 3, June 2007
+
+=cut
