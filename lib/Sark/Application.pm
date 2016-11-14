@@ -5,14 +5,16 @@ use strict;
 use base qw( CLI::Framework );
 
 sub option_spec {
-    [ 'help|h'    => 'show help' ],
-    [ 'quiet|q'   => 'produce script-friendly output' ],
-    [ 'verbose|v' => 'show verbose output' ],
-    [ 'debug|d'   => 'show debug output' ],
+    [ 'help|h'        => 'show help' ],
+        [ 'quiet|q'   => 'produce script-friendly output' ],
+        [ 'verbose|v' => 'show verbose output' ],
+        [ 'debug|d'   => 'show debug output' ],
+        ;
 }
 
 sub command_map {
-    'repo'   => 'Sark::Command::Repo',
+    'repo' => 'Sark::Command::Repo',
+        ;
 }
 
 sub usage_text {

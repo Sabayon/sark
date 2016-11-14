@@ -7,7 +7,7 @@ use strict;
 use Sark;
 
 sub usage_text {
-    "sark repo list"
+    "sark repo list";
 }
 
 sub run {
@@ -16,5 +16,4 @@ sub run {
 }
 
 1;
-
 
