@@ -13,7 +13,7 @@ subtest "loading" => sub {
     Sark->instance->on( "plugin.test.success" =>
             sub { is( $_[1], "test", "plugin.test.success event received" ) }
     );
-    Sark->instance->plugins(qw( Test ));
+    Sark->instance->plugin(qw( Test ));
     Sark->instance->init();
 
 };

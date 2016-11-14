@@ -15,7 +15,8 @@ BEGIN {
 }
 our $VERSION = 0.01;
 
-has 'plugins' => sub {qw( )};
+has 'plugin' => sub {qw()};
+has 'engine' => sub {qw()};
 
 my $singleton;
 
@@ -36,16 +37,19 @@ sub emit {
 
 sub init {
     my $self = shift;
-    $self->load_plugins;
+    $self->_load("Plugin");
+    $self->_load("Engine");
     $self->emit("init");
 }
 
-sub load_plugins {
-    my $self   = shift;
+sub _load {
+    my ( $self, $ns ) = @_;
+    my $ns_lc  = lc($ns);
     my $Loader = Sark::Loader->new;
-    if ( my @PLUGINS = $self->plugins ) {
+    if ( my @PLUGINS = $self->$ns_lc ) {
         for (@PLUGINS) {
-            my $Plugin = "Sark::Plugin::" . ucfirst($_);
+            next if !defined $_;
+            my $Plugin = "Sark::${ns}::" . ucfirst($_);
             next if $Loader->load($Plugin);
             my $inst = $Plugin->new;
             $inst->register($self) if ( $inst->can("register") );
