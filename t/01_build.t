@@ -27,7 +27,6 @@ subtest "events" => sub {
 
 subtest "engines" => sub {
 
-    # XXX: Questo non funziona
     Sark->instance->load_engine("Docker");
 
     Sark->instance->on(
