@@ -7,10 +7,10 @@ use Test::More;
 use Sark;
 use Sark::Build;
 
-initialize();
-
 # Testing compile and test events
 subtest "events" => sub {
+    initialize();
+
     Sark->instance->on( "build.compile" =>
             sub { is( $_[2], "compile", "build.compile event received" ) } );
     Sark->instance->on(
@@ -25,11 +25,11 @@ subtest "events" => sub {
     $build->prepare("prepare");
     $build->configure("configure");
     $build->compile("compile");
-
+    Sark->DESTROY();
 };
 
 subtest "engines" => sub {
-    Sark->DESTROY();
+
     Sark->instance->engine(qw(Docker));
     Sark->instance->init;
 
@@ -59,6 +59,7 @@ subtest "engines" => sub {
     $build->prepare("prepare");
     $build->configure("configure");
     $build->compile("compile");
+    Sark->DESTROY();
 
 };
 
