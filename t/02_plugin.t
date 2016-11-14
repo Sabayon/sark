@@ -18,7 +18,6 @@ subtest "loading" => sub {
 
     # Emit plugin.test
     Sark->instance->emit("plugin.test");
-    Sark->DESTROY();
 };
 
 done_testing;

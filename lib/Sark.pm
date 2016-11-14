@@ -68,6 +68,17 @@ sub _register_module {
     $inst->register($self) if ( $inst->can("register") );
 }
 
+# Register a plugin/engine
+sub load_plugin {
+    my ( $self, $Plugin ) = @_;
+    $self->_register_module("Sark::Plugin::${Plugin}");
+}
+
+sub load_engine {
+    my ( $self, $Plugin ) = @_;
+    $self->_register_module("Sark::Engine::${Plugin}");
+}
+
 sub error {
     my $self = shift;
     my @msg  = @_;
