@@ -5,7 +5,11 @@ use Locale::TextDomain 'Sark';
 
 sub register {
     my ( $self, $sark ) = @_;
-    $sark->emit( "plugin.test.success", "test" );
+
+    # Send plugin.test.success when receiving a "plugin.test" event
+    $sark->on(
+        "plugin.test" => sub { $sark->emit( "plugin.test.success", "test" ); }
+    );
 }
 
 1;

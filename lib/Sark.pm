@@ -15,17 +15,20 @@ BEGIN {
 }
 our $VERSION = 0.01;
 
-has 'plugin' => sub {qw()};
-has 'engine' => sub {qw()};
+has [qw(plugin engine)];
 
+# Singleton class
 my $singleton;
 
 sub new {
     $singleton ||= shift->SUPER::new(@_);
+    $singleton->init if !$singleton->{INITIALIZED};
     $singleton->{LOG_LEVEL} = "info" if !$singleton->{LOG_LEVEL};
     $singleton;
 }
 
+# Re-emits emit events for further inspection and statistics plugin.
+# this eventually will go in a separate plugin
 sub emit {
     my $self = shift;
 
@@ -35,26 +38,34 @@ sub emit {
 
 }
 
+# Init sequence when initialized first time
 sub init {
     my $self = shift;
-    $self->_load("Plugin");
-    $self->_load("Engine");
+    $self->_register_namespace("Plugin");
+    $self->_register_namespace("Engine");
     $self->emit("init");
+    $singleton->{INITIALIZED}++;
+    return $self;
 }
 
-sub _load {
+# Register an entire Sark::namespace
+sub _register_namespace {
     my ( $self, $ns ) = @_;
-    my $ns_lc  = lc($ns);
-    my $Loader = Sark::Loader->new;
+    my $ns_lc = lc($ns);
     if ( my @PLUGINS = $self->$ns_lc ) {
         for (@PLUGINS) {
             next if !defined $_;
-            my $Plugin = "Sark::${ns}::" . ucfirst($_);
-            next if $Loader->load($Plugin);
-            my $inst = $Plugin->new;
-            $inst->register($self) if ( $inst->can("register") );
+            $self->_register_module( "Sark::${ns}::" . ucfirst($_) );
         }
     }
+}
+
+# Register a single module. e.g. Sark::Engine::Docker
+sub _register_module {
+    my ( $self, $Plugin ) = @_;
+    return if Sark::Loader->new->load($Plugin);
+    my $inst = $Plugin->new;
+    $inst->register($self) if ( $inst->can("register") );
 }
 
 sub error {

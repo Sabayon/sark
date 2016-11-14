@@ -2,14 +2,13 @@
 use lib './t/lib';
 use warnings FATAL => 'all';
 use strict;
-use Helpers qw(initialize);
+use Helpers;
 use Test::More;
 use Sark;
 use Sark::Build;
 
 # Testing compile and test events
 subtest "events" => sub {
-    initialize();
 
     Sark->instance->on( "build.compile" =>
             sub { is( $_[2], "compile", "build.compile event received" ) } );
@@ -30,8 +29,7 @@ subtest "events" => sub {
 
 subtest "engines" => sub {
 
-    Sark->instance->engine(qw(Docker));
-    Sark->instance->init;
+    Sark->instance( engine => "Docker" );
 
     Sark->instance->on(
         "engine.docker.build.prepare" => sub {
