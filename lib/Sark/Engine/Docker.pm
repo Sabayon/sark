@@ -12,9 +12,9 @@ sub register {
         }
     );
     $sark->on(
-        "build.configure" => sub {
-            $sark->emit( "engine.docker.build.configure", $self, @_ );
-            $self->configure( $_[0] );
+        "build.pre_clean" => sub {
+            $sark->emit( "engine.docker.build.pre_clean", $self, @_ );
+            $self->pre_clean( $_[0] );
         }
     );
     $sark->on(
@@ -23,18 +23,39 @@ sub register {
             $self->compile( $_[0] );
         }
     );
+    $sark->on(
+        "build.publish" => sub {
+            $sark->emit( "engine.docker.build.publish", $self, @_ );
+            $self->publish( $_[0] );
+        }
+    );
+    $sark->on(
+        "build.post_clean" => sub {
+            $sark->emit( "engine.docker.build.post_clean", $self, @_ );
+            $self->post_clean( $_[0] );
+        }
+    );
 }
 
 sub prepare {
 
 }
 
-sub configure {
+sub pre_clean {
 
 }
 
 sub compile {
 
 }
+
+sub publish {
+
+}
+
+sub post_clean {
+
+}
+
 
 1;

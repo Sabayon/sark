@@ -5,8 +5,12 @@ has [qw( id targets engine )];
 
 sub prepare { Sark->instance->emit( "build.prepare", @_ ) }
 
-sub configure { Sark->instance->emit( "build.configure", @_ ) }
+sub pre_clean { Sark->instance->emit( "build.pre_clean", @_ ) }
 
 sub compile { Sark->instance->emit( "build.compile", @_ ) }
+
+sub publish { Sark->instance->emit( "build.publish", @_ ) }
+
+sub post_clean { Sark->instance->emit( "build.post_clean", @_ ) }
 
 1;

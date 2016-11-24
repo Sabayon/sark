@@ -21,7 +21,7 @@ sub validate {
 
 sub run {
     my $sark = Sark->new();
-    $sark->error("repo disable not implemented yet");
+    $sark->error("repo build not implemented yet");
 }
 
 1;
