@@ -202,11 +202,35 @@ Example:
 
 =item C<repositories>
 
+A list of extra SCR repositories that should be installed inside the build environment before the compile phase. This might be necessary if you have related repositories and want to avoid making the same package available in all.
+
+Defaults to an empty list. Example:
+
+  build:
+    equo:
+      repositories:
+        - community
+
 =item C<remove_repositories>
+
+A list of previously installed SCR repositories that should be removed from the build environment before the compile phase.
+
+Defaults to an empty list. Example:
+
+  build:
+    equo:
+      repositories:
+        - community
 
 =item C<enman_self>
 
+Whether or not to make the current repository available inside the build environment for the compile phase. This option can be useful to reduce build times by allowing a previously built version of the package to satisfy dependency installs on a subsequent build.
+
 =item C<no_cache>
+
+Whether or not to enable the disk caches (for portage tree, portage and entropy distfiles).
+
+Defaults to false, acceptable values are boolean. You should avoid changing this unless you know what you are doing.
 
 =item C<package>
 
@@ -214,15 +238,48 @@ Example:
 
 =item C<install>
 
+A list of entropy packages that should be installed prior to the compile phase. This might be necessary if some packages don't specify all their dependencies correctly.
+
+Defaults to an empty list. Example:
+
+  build:
+    equo:
+      package:
+        install:
+          - app/foo
+          - app/bar-1
+
 =item C<remove>
+
+A list of entropy packages that should be removed prior to the compile phase. This might be necessary if some packages conflict.
+
+Defaults to an empty list. Example:
+
+  build:
+    equo:
+      package:
+        install:
+          - app/foo
 
 =item C<mask>
 
+A list of entropy package masks that should be applied in the build environent before the compile phase. This will present matching entropy package being installed to satisfy a dependency during the compile phase.
+
+Any valid entropy mask atom is acceptable here, see C</etc/entropy/packages/package.db.mask.example> for examples.
+
 =item C<unmask>
+
+A list of entropy package unmasks that should be applied in the build environent before the compile phase. This will present matching entropy package being installed to satisfy a dependency during the compile phase.
+
+Any valid entropy mask atom is acceptable here, see C</etc/entropy/packages/package.db.unmask.example> for examples.
 
 =back
 
 =item C<repository>
+
+Which repository should be used as the base repository for installing equo packages within the build environment (both the manually specified packages listed above, but also those installed for dependencies during the compile phase).
+
+Defaults to C<main> (sabayonlinux.org), acceptable values are C<main>, C<weekly>. You should not change this setting unless you know what you are doing.
 
 =item C<dependency_install>
 
@@ -230,15 +287,39 @@ Example:
 
 =item C<enabled>
 
+Whether or not dependencies for the targets should be installed via entropy where available. 
+
+Defaults to true, acceptable values are boolean.
+
 =item C<install_atoms>
+
+Whether to install dependencies using unversioned atoms. If set to c<true>, an unversioned atom will be installed (e.g. C<app/foo>). If set to C<false>, the fully versioned atom will be installed as specified in the depending package ebuild (e.g. C<< >=app/foo-1 >>).
+
+Defaults to true, acceptable values are boolean.
 
 =item C<dependency_scan_depth>
 
+How many levels deep through the package dependency tree for each target should be considered for installion using Entropy.
+
+Defaults to 2, acceptable values are positive integers.
+
 =item C<prune_virtuals>
+
+Whether depedencies of virtual packages should be pruned. This is useful to avoid installing unnecessary packages. For example, if a target depends on C<virtual-mta>, the second level of dependencies will include every MTA package that satisfies the virtual; without this option set, all of those MTA packages would be installed one by one (each substituting the previous one) which will waste a lot of time.
+
+Defaults to true, acceptable values are boolean. You should not change this setting unless you know what you are doing.
 
 =item C<install_version>
 
+Whether to install dependencies using unversioned atoms. If set to c<false>, an unversioned atom will be installed (e.g. C<app/foo>). If set to C<false>, the fully versioned atom will be installed as specified in the depending package ebuild (e.g. C<< >=app/foo-1 >>).
+
+Defaults to false, acceptable values are boolean.
+
 =item C<split_install>
+
+Whether to install packages via entropy using separate install commands, or as a single list of packages. When set to C<true>, each package will be installed individually, meaning failure to install one package won't prevent others from being installed. When set to C<false>, all packages are installed in one go which can be quicker, but a failure may cause none to be installed.
+
+Defaults to false, acceptable values are boolean.
 
 =back
 
@@ -250,37 +331,109 @@ Example:
 
 =item C<default_args>
 
+String of options passed to all emerge install comands.
+
+Defaults to "--accept-properties=-interactive --verbose --oneshot --complete-graph --buildpkg". If changing this setting, it's highly recommended to keep all of the default arguments present to keep the build working as expected. That is you may add additional arguments, but it's not recommended to remove any.
+
 =item C<split_install>
+
+Whether to install packages via portage during the compile phase using separate install commands, or as a single list of packages. When set to C<true>, each package will be installed individually, meaning failure to install one package won't prevent others from being installed. When set to C<false>, all packages are installed in one go which can be quicker, but a failure may cause none to be installed.
+
+Defaults to false, acceptable values are boolean.
 
 =item C<features>
 
+List of portage features to enable during the compile phase.
+
+Defaults to "parallel-fetch protect-owned compressdebug splitdebug -userpriv".
+
 =item C<profile>
+
+Name or number of an eselect profile entry to use inside the build environment. This will be set using eselect at the start of the build. If changing this setting, it may also be necessary to clean the cache to ensure consistency.
+
+Defaults to 3. Acceptable values can be found using C<eselect profile list>.
 
 =item C<jobs>
 
+The number of portage installs that can be done concurrently when the C<parallel> feature is enabled.
+
+Defaults to 1, acceptable values are positive integers.
+
 =item C<preserved_rebuild>
+
+Whether or not to run an emerge of preserved libs after the build.
+
+Defaults to false, acceptable values are boolean.
 
 =item C<skip_sync>
 
+Whether or not to skip the portage sync. This setting might be useful if doing local development work and frequent rebuilds to save time, but should be disabled for normal production builds.
+
+Default is false, acceptable values are boolean.
+
 =item C<webrsync>
+
+Whether to use C<emerge --webrsync> instead of C<emerge --sync>. This option might be useful if you have a high latency connection or are behind a proxy.
+
+Defaults to false, acceptable values are boolean.
 
 =item C<remote_overlay>
 
+A list of non-layman overlays that need to be installed inside the build environment. Each entry should be of the form:
+
+  "name|protocol|url"
+  
+Defaults to an empty list.
+  
+Example:
+
+  build:
+    emerge:
+      remote_overlay:
+        - myoverlay|git|https://github.com/foo/bar
+
 =item C<remove_remote_overlay>
+
+A list of previously installed non-layman overlays that need to be removed prior to the build. This should only be the name of the overlay, matching what was used to install it using the C<remote_overlay> setting above.
+
+Example:
+
+  build:
+    emerge:
+      remove_remote_overlay:
+        - myoverlay
 
 =item C<remove_layman_overlay>
 
+A list of previously installed layman overlays that need to be removed prior to the build.
+
+Defaults to an empty list.
+
 =item C<remove>
+
+A list of valid portage atoms which should be removed before the compile phase. This setting might be useful if a conflicting package is pulled in during an earlier phase which would prevent a target from being built.
+
+Defaults to an empty list.
 
 =back
 
 =item C<docker>
 
+The following settings only apply when using the C<Docker> build engine.
+
 =over 2
 
 =item C<image>
 
+Name of the docker image to use for the build environment.
+
+Defaults to "sabayon/builder-amd64".
+
 =item C<entropy_image>
+
+Name of the docker image to use for the repository editing environment.
+
+Defaults to "sabayon/eit-amd64"
 
 =back
 
