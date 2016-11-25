@@ -1,37 +1,228 @@
 package Sark::Specification;
+
 # ABSTRACT: Repository build specification
 
 use warnings;
 use strict;
 
 use Data::Rx;
+use Sark::RxType::Atom;
+use Sark::RxType::DockerImage;
+use Sark::RxType::Overlay;
+use Sark::RxType::RemoteOverlay;
+use Sark::RxType::Repository;
+use YAML;
 
-=method load_from_spec_file
+=method new
 
 =cut
+
 sub new {
     my $class = shift;
-    
-    my $self = {}
+
+    my $self = {};
     bless $self, $class;
-    
+
     $self->initialize();
-    
+
     return $self;
 }
 
 =method initialize
 
+Initializes the specification object, including setting up the schema
+for the spec file validation.
+
 =cut
+
 sub initialize {
     my $self = shift;
 
+    my $rx = Data::Rx->new(
+        {   sort_keys    => 1,
+            prefix       => { sark => 'tag:sabayon.org:sark/', },
+            type_plugins => [
+                qw(
+                    Sark::RxType::Atom
+                    Sark::RxType::DockerImage
+                    Sark::RxType::Overlay
+                    Sark::RxType::RemoteOverlay
+                    Sark::RxType::Repository
+                    )
+            ],
+        }
+    );
+
+    # Define the schema used to validate the specifcation
+
+    my $success = {
+        type     => '//rec',
+        required => {
+            'repository' => {
+                type     => '//rec',
+                required => { description => '//str', },
+                optional => {
+                    maintenance => {
+                        type     => '//rec',
+                        optional => {
+                            check_diffs            => '//bool',
+                            keep_previous_versions => '//int',
+                            remove                 => {
+                                type     => '//arr',
+                                contents => 'tag:sabayon.org:sark/atom',
+                            },
+                        }
+                    }
+                }
+            },
+            'build' => {
+                type     => '//rec',
+                optional => {
+                    qa_checks => '//bool',
+                    overlays  => {
+                        type     => '//arr',
+                        contents => 'tag:sabayon.org:sark/overlay',
+                    },
+                    target => {
+                        type     => '//arr',
+                        contents => 'tag:sabayon.org:sark/atom',
+                    },
+                    injected_target => {
+                        type     => '//arr',
+                        contents => 'tag:sabayon.org:sark/atom',
+                    },
+                    equo => {
+                        type     => '//rec',
+                        optional => {
+                            repositories => {
+                                type     => '//arr',
+                                contents => 'tag:sabayon.org:sark/repository',
+                            },
+                            remove_repositories => {
+                                type     => '//arr',
+                                contents => 'tag:sabayon.org:sark/repository',
+                            },
+                            enman_self => '//bool',
+                            no_cache   => '//bool',
+                            package    => {
+                                type     => '//rec',
+                                optional => {
+                                    install => {
+                                        type => '//arr',
+                                        contents =>
+                                            'tag:sabayon.org:sark/atom',
+                                    },
+                                    remove => {
+                                        type => '//arr',
+                                        contents =>
+                                            'tag:sabayon.org:sark/atom',
+                                    },
+                                    mask => {
+                                        type => '//arr',
+                                        contents =>
+                                            'tag:sabayon.org:sark/atom',
+                                    },
+                                    unmask => {
+                                        type => '//arr',
+                                        contents =>
+                                            'tag:sabayon.org:sark/atom',
+                                    },
+                                },
+                            },
+                            repository => {
+                                type => '//any',
+                                of   => [
+                                    { type => '//str', value => 'main' },
+                                    { type => '//str', value => 'weekly' },
+                                ],
+                            },
+                            dependency_install => {
+                                type     => '//rec',
+                                optional => {
+                                    enable                => '//bool',
+                                    install_atoms         => '//bool',
+                                    dependency_scan_depth => '//int',
+                                    prune_virtuals        => '//bool',
+                                    install_version       => '//bool',
+
+                                },
+                            },
+                        },
+                    },
+                    emerge => {
+                        type     => '//rec',
+                        optional => {
+                            default_args  => '//str',
+                            split_install => '//bool',
+                            features      => '//str',
+                            profile       => {
+                                type => '//any',
+                                of   => [
+                                    { type => '//str' },
+                                    { type => '//num' },
+                                ],
+                            },
+                            jobs                  => '//num',
+                            preserved_rebuild     => '//bool',
+                            skip_sync             => '//bool',
+                            webrsync              => '//bool',
+                            remote_overlay        => '/sark/remote_overlay',
+                            remove_remote_overlay => {
+                                type     => '//arr',
+                                contents => 'tag:sabayon.org:sark/overlay',
+                            },
+                            remove_layman_overlay => {
+                                type     => '//arr',
+                                contents => 'tag:sabayon.org:sark/overlay',
+                            },
+                            remove => {
+                                type     => '//arr',
+                                contents => 'tag:sabayon.org:sark/atom',
+                            },
+                        },
+                    },
+                    docker => {
+                        type     => '//rec',
+                        optional => {
+                            image         => '/sark/docker_image',
+                            entropy_image => '/sark/docker_image',
+                        },
+                    },
+                },
+            },
+        },
+    };
+
+    $self->{schema} = $rx->make_schema($success);
 }
 
-=method validate
+=method validate( $document, $sparse=1 )
+
+Takes the specification C<document> as a string, and confirms that it is
+syntactically valid against the specification. The C<sparse> paramter
+determines whether to do sparse validation (which doesn't require all
+directives to be set), or dense validation (all directives must be set).
+
+Sparse validation is done for build specification files, and dense
+validation for cache files.
+
+Throws an exception if the document fails to validate.
 
 =cut
+
 sub validate {
+    my $self     = shift;
+    my $document = shift;
+    my $sparse   = shift // 1;
+
+    my $result = $self->{schema}->assert_valid($document);
+}
+
+=method parse_spec
+
+=cut
+
+sub parse_spec {
     my $self = shift;
 
 }
@@ -39,6 +230,7 @@ sub validate {
 =method load_from_spec_file
 
 =cut
+
 sub load_from_spec_file {
     my $self = shift;
 }
@@ -46,14 +238,16 @@ sub load_from_spec_file {
 =method override_from_environment
 
 =cut
+
 sub override_from_environment {
     my $self = shift;
-    
+
 }
 
 =method load_from_cache_file
 
 =cut
+
 sub load_from_cache_file {
     my $self = shift;
 
@@ -62,6 +256,7 @@ sub load_from_cache_file {
 =method save_to_cache_file
 
 =cut
+
 sub save_to_cache_file {
     my $self = shift;
 
