@@ -20,7 +20,7 @@ build:
     - app-misc/foo
 END
 
-    my $no_repo_description = YAML::Load(<<END);
+    my $no_repo_description = YAML::Tiny::Load(<<END);
 build:
   target:
     - app-misc/foo
@@ -36,18 +36,40 @@ END
 };
 
 subtest "sparse-dense spec conversion" => sub {
-    my $spec = Sark::Specification->new;
-
     my $sparse_spec = {
         type     => '//rec',
         optional => { foo => '//str', }
     };
 
-    my $dense_spec = $spec->_make_dense_spec($sparse_spec);
+    my $dense_spec = Sark::Specification::_make_dense_spec($sparse_spec);
 
     ok( defined( $dense_spec->{required}->{foo} ) );
     ok( !defined( $dense_spec->{optional} ) );
 
+};
+
+subtest "default merging" => sub {
+    my $sparse_spec = {
+        repository => { description => "Test repo", },
+        build      => { target      => [ 'app-misc/foobar', ] }
+    };
+
+    my $dense_spec = Sark::Specification::_add_missing_defaults($sparse_spec);
+
+    # Check a variety of settings
+    ok( defined( $dense_spec->{repository}->{maintenance}->{clean_cache} ),
+        'repository: maintenance: clean_cache' );
+    ok( defined( $dense_spec->{build}->{equo}->{repositories} ),
+        'build: equo: repositories' );
+    ok( defined( $dense_spec->{build}->{equo}->{package} ),
+        'build: equo: package: install' );
+    ok( defined( $dense_spec->{build}->{emerge}->{default_args} ),
+        'build: emerge: default_args' );
+
+    # Check the merged document passes the dense spec validation
+    my $spec = Sark::Specification->new;
+    lives_ok { $spec->validate( $dense_spec, 0 ) }
+        'merged document validates against dense spec';
 };
 
 done_testing;

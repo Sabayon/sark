@@ -4,14 +4,19 @@ package Sark::Specification;
 
 use warnings;
 use strict;
+use Exporter 'import';
 
 use Data::Rx;
 use Sark::RxType::Atom;
+use Sark::RxType::Boolean;
 use Sark::RxType::DockerImage;
 use Sark::RxType::Overlay;
 use Sark::RxType::RemoteOverlay;
 use Sark::RxType::Repository;
-use YAML;
+use Hash::Merge qw( merge );
+use YAML::Tiny;
+
+my @EXPORT_OK = qw( _add_missing_defaults _make_dense_spec );
 
 =method new
 
@@ -44,6 +49,7 @@ sub initialize {
             type_plugins => [
                 qw(
                     Sark::RxType::Atom
+                    Sark::RxType::Boolean
                     Sark::RxType::DockerImage
                     Sark::RxType::Overlay
                     Sark::RxType::RemoteOverlay
@@ -65,7 +71,8 @@ sub initialize {
                     maintenance => {
                         type     => '//rec',
                         optional => {
-                            check_diffs            => '//bool',
+                            check_diffs            => '/sark/bool',
+                            clean_cache            => '/sark/bool',
                             keep_previous_versions => '//int',
                             remove                 => {
                                 type     => '//arr',
@@ -84,7 +91,7 @@ sub initialize {
                     },
                 },
                 optional => {
-                    qa_checks => '//bool',
+                    qa_checks => '/sark/bool',
                     overlays  => {
                         type     => '//arr',
                         contents => 'tag:sabayon.org:sark/overlay',
@@ -104,8 +111,8 @@ sub initialize {
                                 type     => '//arr',
                                 contents => 'tag:sabayon.org:sark/repository',
                             },
-                            enman_self => '//bool',
-                            no_cache   => '//bool',
+                            enman_self => '/sark/bool',
+                            no_cache   => '/sark/bool',
                             package    => {
                                 type     => '//rec',
                                 optional => {
@@ -141,12 +148,12 @@ sub initialize {
                             dependency_install => {
                                 type     => '//rec',
                                 optional => {
-                                    enable                => '//bool',
-                                    install_atoms         => '//bool',
+                                    enable                => '/sark/bool',
+                                    install_atoms         => '/sark/bool',
                                     dependency_scan_depth => '//int',
-                                    prune_virtuals        => '//bool',
-                                    install_version       => '//bool',
-
+                                    prune_virtuals        => '/sark/bool',
+                                    install_version       => '/sark/bool',
+                                    split_install         => '/sark/bool',
                                 },
                             },
                         },
@@ -155,7 +162,7 @@ sub initialize {
                         type     => '//rec',
                         optional => {
                             default_args  => '//str',
-                            split_install => '//bool',
+                            split_install => '/sark/bool',
                             features      => '//str',
                             profile       => {
                                 type => '//any',
@@ -164,11 +171,14 @@ sub initialize {
                                     { type => '//num' },
                                 ],
                             },
-                            jobs                  => '//num',
-                            preserved_rebuild     => '//bool',
-                            skip_sync             => '//bool',
-                            webrsync              => '//bool',
-                            remote_overlay        => '/sark/remote_overlay',
+                            jobs              => '//num',
+                            preserved_rebuild => '/sark/bool',
+                            skip_sync         => '/sark/bool',
+                            webrsync          => '/sark/bool',
+                            remote_overlay    => {
+                                type     => '//arr',
+                                contents => '/sark/remote_overlay',
+                            },
                             remove_remote_overlay => {
                                 type     => '//arr',
                                 contents => 'tag:sabayon.org:sark/overlay',
@@ -195,56 +205,11 @@ sub initialize {
         },
     };
 
-    my $dense_spec = $self->_make_dense_spec($sparse_spec);
+    my $dense_spec = _make_dense_spec($sparse_spec);
     print YAML::Tiny::Dump($dense_spec);
 
     $self->{sparse_schema} = $rx->make_schema($sparse_spec);
     $self->{dense_schema}  = $rx->make_schema($dense_spec);
-}
-
-=method _make_dense_spec( $sparse_spec )
-
-Converts a sparse specification (which might have optional fields) into
-a dense one where the same fields are present but are all required.
-
-=cut
-
-sub _make_dense_spec {
-    my $self = shift;
-    my $sparse_spec = shift // {};
-
-    my $result = {};
-
-    for my $key ( keys( %{$sparse_spec} ) ) {
-        my $result_key = $key;
-        if ( $key eq 'optional' ) {
-            $result_key = 'required';
-        }
-
-        if ( $result_key eq 'required' ) {
-            if ( !defined $result->{$result_key} ) {
-                $result->{$result_key} = {};
-            }
-
-            for my $field ( keys( %{ $sparse_spec->{$key} } ) ) {
-                if ( ref( $sparse_spec->{$key}->{$field} ) ) {
-                    $result->{$result_key}->{$field} =
-                        $self->_make_dense_spec(
-                        $sparse_spec->{$key}->{$field} );
-                }
-                else {
-                    $result->{$result_key}->{$field} =
-                        $sparse_spec->{$key}->{$field};
-                }
-            }
-
-        }
-        else {
-            $result->{$result_key} = $sparse_spec->{$key};
-        }
-    }
-
-    return $result;
 }
 
 =method validate( $document, $sparse=1 )
@@ -316,6 +281,111 @@ sub load_from_cache_file {
 sub save_to_cache_file {
     my $self = shift;
 
+}
+
+=func _make_dense_spec( $sparse_spec )
+
+Converts a sparse specification (which might have optional fields) into
+a dense one where the same fields are present but are all required.
+
+=cut
+
+sub _make_dense_spec {
+    my $sparse_spec = shift // {};
+
+    my $result = {};
+
+    for my $key ( keys( %{$sparse_spec} ) ) {
+        my $result_key = $key;
+        if ( $key eq 'optional' ) {
+            $result_key = 'required';
+        }
+
+        if ( $result_key eq 'required' ) {
+            if ( !defined $result->{$result_key} ) {
+                $result->{$result_key} = {};
+            }
+
+            for my $field ( keys( %{ $sparse_spec->{$key} } ) ) {
+                if ( ref( $sparse_spec->{$key}->{$field} ) ) {
+                    $result->{$result_key}->{$field} =
+                        _make_dense_spec( $sparse_spec->{$key}->{$field} );
+                }
+                else {
+                    $result->{$result_key}->{$field} =
+                        $sparse_spec->{$key}->{$field};
+                }
+            }
+
+        }
+        else {
+            $result->{$result_key} = $sparse_spec->{$key};
+        }
+    }
+
+    return $result;
+}
+
+=fund _add_missing_defaults( $spec )
+
+Populates the given specification with any missing values using hardcoded
+defaults.
+
+=cut
+
+sub _add_missing_defaults {
+    my $spec = shift || {};
+
+    my $defaults = YAML::Tiny::Load(<<END);
+repository:
+  maintenance:
+    check_diffs: true
+    clean_cache: false
+    keep_previous_versions: 1
+    remove: []
+build:
+  qa_checks: false
+  overlays: []
+  injected_target: []
+  equo:
+    repositories: []
+    remove_repositories: []
+    enman_self: false
+    no_cache: true
+    package:
+      install: []
+      remove: []
+      mask: []
+      unmask: []
+    repository: main
+    dependency_install:
+      enable: true
+      install_atoms: true
+      dependency_scan_depth: 2
+      prune_virtuals: true
+      install_version: false
+      split_install: false
+  emerge:
+    default_args: "--accept-properties=-interactive --verbose --oneshot --complete-graph --buildpkg"
+    split_install: false
+    features: "parallel-fetch protect-owned compressdebug splitdebug -userpriv"
+    profile: 3
+    jobs: 1
+    preserved_rebuild: false
+    skip_sync: false
+    webrsync: false
+    remote_overlay: []
+    remove_remote_overlay: []
+    remove_layman_overlay: []
+    remove: []
+  docker:
+    image: "sabayon/builder-amd64"
+    entropy_image: "sabayon/eit-amd64"
+END
+    use Data::Dumper;
+    print Dumper($defaults);
+
+    return merge( $spec, $defaults );
 }
 
 1;
@@ -433,7 +503,7 @@ This option might be needed when multiple conflicting packages need to be built 
 
 Whether or not to enable repoman checks on overlays.
 
-Defaults to true, acceptable values are boolean. This value should be left enabled unless you know what you are doing.
+Defaults to false, acceptable values are boolean.
 
 =item C<overlays>
 
@@ -481,7 +551,7 @@ Whether or not to make the current repository available inside the build environ
 
 Whether or not to enable the disk caches (for portage tree, portage and entropy distfiles).
 
-Defaults to false, acceptable values are boolean. You should avoid changing this unless you know what you are doing.
+Defaults to true, acceptable values are boolean. 
 
 =item C<package>
 
