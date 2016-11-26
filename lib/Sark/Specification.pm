@@ -55,7 +55,7 @@ sub initialize {
 
     # Define the schema used to validate the specifcation
 
-    my $success = {
+    my $sparse_spec = {
         type     => '//rec',
         required => {
             'repository' => {
@@ -77,15 +77,17 @@ sub initialize {
             },
             'build' => {
                 type     => '//rec',
+                required => {
+                    target => {
+                        type     => '//arr',
+                        contents => 'tag:sabayon.org:sark/atom',
+                    },
+                },
                 optional => {
                     qa_checks => '//bool',
                     overlays  => {
                         type     => '//arr',
                         contents => 'tag:sabayon.org:sark/overlay',
-                    },
-                    target => {
-                        type     => '//arr',
-                        contents => 'tag:sabayon.org:sark/atom',
                     },
                     injected_target => {
                         type     => '//arr',
@@ -193,7 +195,56 @@ sub initialize {
         },
     };
 
-    $self->{schema} = $rx->make_schema($success);
+    my $dense_spec = $self->_make_dense_spec($sparse_spec);
+    print YAML::Tiny::Dump($dense_spec);
+
+    $self->{sparse_schema} = $rx->make_schema($sparse_spec);
+    $self->{dense_schema}  = $rx->make_schema($dense_spec);
+}
+
+=method _make_dense_spec( $sparse_spec )
+
+Converts a sparse specification (which might have optional fields) into
+a dense one where the same fields are present but are all required.
+
+=cut
+
+sub _make_dense_spec {
+    my $self = shift;
+    my $sparse_spec = shift // {};
+
+    my $result = {};
+
+    for my $key ( keys( %{$sparse_spec} ) ) {
+        my $result_key = $key;
+        if ( $key eq 'optional' ) {
+            $result_key = 'required';
+        }
+
+        if ( $result_key eq 'required' ) {
+            if ( !defined $result->{$result_key} ) {
+                $result->{$result_key} = {};
+            }
+
+            for my $field ( keys( %{ $sparse_spec->{$key} } ) ) {
+                if ( ref( $sparse_spec->{$key}->{$field} ) ) {
+                    $result->{$result_key}->{$field} =
+                        $self->_make_dense_spec(
+                        $sparse_spec->{$key}->{$field} );
+                }
+                else {
+                    $result->{$result_key}->{$field} =
+                        $sparse_spec->{$key}->{$field};
+                }
+            }
+
+        }
+        else {
+            $result->{$result_key} = $sparse_spec->{$key};
+        }
+    }
+
+    return $result;
 }
 
 =method validate( $document, $sparse=1 )
@@ -215,7 +266,12 @@ sub validate {
     my $document = shift;
     my $sparse   = shift // 1;
 
-    my $result = $self->{schema}->assert_valid($document);
+    if ($sparse) {
+        my $result = $self->{sparse_schema}->assert_valid($document);
+    }
+    else {
+        my $result = $self->{dense_schema}->assert_valid($document);
+    }
 }
 
 =method parse_spec
