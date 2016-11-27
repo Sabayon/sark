@@ -16,7 +16,7 @@ use Sark::RxType::Repository;
 use Hash::Merge qw( merge );
 use YAML::Tiny;
 
-my @EXPORT_OK = qw( _add_missing_defaults _make_dense_spec _override_single );
+my @EXPORT_OK = qw( _add_missing_defaults _make_dense_spec _override_from_environment _override_single );
 
 =method new
 
@@ -206,7 +206,6 @@ sub initialize {
     };
 
     my $dense_spec = _make_dense_spec($sparse_spec);
-    print YAML::Tiny::Dump($dense_spec);
 
     $self->{sparse_schema} = $rx->make_schema($sparse_spec);
     $self->{dense_schema}  = $rx->make_schema($dense_spec);
@@ -276,8 +275,8 @@ sub parse_spec {
 
     if ($sparse) {
         $self->validate($data);
-        $data = _make_dense_spec($data);
         $data = _add_missing_defaults($data);
+        $data = _override_from_environment($data);
     }
 
     $self->validate( $data, 0 );
@@ -327,38 +326,6 @@ sub load_from_cache_file {
     };
 
     $self->parse_spec( $contents, 0 );
-}
-
-=method override_from_environment
-
-Updates the current loaded specification with any overrides specified by
-environment variables. Only a subset of the build spec settings can be
-overridden using the environment, those which are needed to configure a build
-server, or that might need to be changed on manual runs to repair damage.
-
-=cut
-
-sub override_from_environment {
-    my $self = shift;
-
-    _override_single( $self->{spec}->{repository}->{maintenance},
-        'check_diffs', $ENV{CHECK_BUILD_DIFFS} );
-    _override_single( $self->{spec}->{repository}->{maintenance},
-        'clean_cache', $ENV{CLEAN_CACHE} );
-    _override_single( $self->{spec}->{build}->{docker},
-        'image', $ENV{DOCKER_IMAGE} );
-    _override_single( $self->{spec}->{build}->{docker},
-        'entropy_image', $ENV{DOCKER_EIT_IMAGE} );
-    _override_single( $self->{spec}->{build}->{equo},
-        'no_cache', $ENV{ETP_NOCACHE} );
-    _override_single( $self->{spec}->{build}->{emerge},
-        'default_args', $ENV{EMERGE_DEFAULT_ARGS} );
-    _override_single( $self->{spec}->{build}->{emerge},
-        'features', $ENV{FEATURES} );
-    _override_single( $self->{spec}->{build}->{emerge},
-        'profile', $ENV{BUILDER_PROFILE} );
-    _override_single( $self->{spec}->{build}->{emerge},
-        'webrsync', $ENV{WEBRSYNC} );
 }
 
 =method save_to_cache_file
@@ -479,19 +446,59 @@ END
     return merge( $spec, $defaults );
 }
 
-=func _override_single( $spec, $env )
+=func override_from_environment
 
-Replaces the setting with the given environment variable if present.
+Updates the given specification with any overrides specified by
+environment variables. Only a subset of the build spec settings can be
+overridden using the environment, those which are needed to configure a build
+server, or that might need to be changed on manual runs to repair damage.
+
+=cut
+
+sub _override_from_environment {
+    my $spec = shift // {};
+
+    _override_single( $spec->{repository}->{maintenance},
+        'check_diffs', $ENV{CHECK_BUILD_DIFFS} );
+    _override_single( $spec->{repository}->{maintenance},
+        'clean_cache', $ENV{CLEAN_CACHE} );
+    _override_single( $spec->{build}->{docker},
+        'image', $ENV{DOCKER_IMAGE} );
+    _override_single( $spec->{build}->{docker},
+        'entropy_image', $ENV{DOCKER_EIT_IMAGE} );
+    _override_single( $spec->{build}->{equo},
+        'no_cache', $ENV{ETP_NOCACHE} );
+    _override_single( $spec->{build}->{emerge},
+        'default_args', $ENV{EMERGE_DEFAULT_ARGS} );
+    _override_single( $spec->{build}->{emerge},
+        'features', $ENV{FEATURES} );
+    _override_single( $spec->{build}->{emerge},
+        'profile', $ENV{BUILDER_PROFILE} );
+    _override_single( $spec->{build}->{emerge},
+        'webrsync', $ENV{WEBRSYNC} );
+        
+    return $spec;
+}
+
+=func _override_single( $spec, $setting, $value )
+
+Replaces the value of C<setting> in C<spec> with the given value if present.
+It's expected that C<value> will be an environment variable, which may not be
+defined.
+
+Example:
+
+  $spec->_override_single( $spec, 'key', $ENV{KEY} );
 
 =cut
 
 sub _override_single {
     my $spec = shift // {};
-    my $setting = shift or die "Required paramter missing";
-    my $env = shift // undef;
+    my $setting = shift or die "Required setting paramter missing";
+    my $value = shift // undef;
 
-    if ( defined($env) ) {
-        $spec->{$setting} = $env;
+    if ( defined($value) ) {
+        $spec->{$setting} = $value;
     }
 }
 
