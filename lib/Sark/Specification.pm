@@ -16,7 +16,7 @@ use Sark::RxType::Repository;
 use Hash::Merge qw( merge );
 use YAML::Tiny;
 
-my @EXPORT_OK = qw( _add_missing_defaults _make_dense_spec );
+my @EXPORT_OK = qw( _add_missing_defaults _make_dense_spec _override_single );
 
 =method new
 
@@ -258,11 +258,34 @@ sub load_from_spec_file {
 
 =method override_from_environment
 
+Updates the current loaded specification with any overrides specified by
+environment variables. Only a subset of the build spec settings can be
+overridden using the environment, those which are needed to configure a build
+server, or that might need to be changed on manual runs to repair damage.
+
 =cut
 
 sub override_from_environment {
     my $self = shift;
 
+    _override_single( $self->{spec}->{repository}->{maintenance},
+        'check_diffs', $ENV{CHECK_BUILD_DIFFS} );
+    _override_single( $self->{spec}->{repository}->{maintenance},
+        'clean_cache', $ENV{CLEAN_CACHE} );
+    _override_single( $self->{spec}->{build}->{docker},
+        'image', $ENV{DOCKER_IMAGE} );
+    _override_single( $self->{spec}->{build}->{docker},
+        'entropy_image', $ENV{DOCKER_EIT_IMAGE} );
+    _override_single( $self->{spec}->{build}->{equo},
+        'no_cache', $ENV{ETP_NOCACHE} );
+    _override_single( $self->{spec}->{build}->{emerge},
+        'default_args', $ENV{EMERGE_DEFAULT_ARGS} );
+    _override_single( $self->{spec}->{build}->{emerge},
+        'features', $ENV{FEATURES} );
+    _override_single( $self->{spec}->{build}->{emerge},
+        'profile', $ENV{BUILDER_PROFILE} );
+    _override_single( $self->{spec}->{build}->{emerge},
+        'webrsync', $ENV{WEBRSYNC} );
 }
 
 =method load_from_cache_file
@@ -386,6 +409,22 @@ END
     print Dumper($defaults);
 
     return merge( $spec, $defaults );
+}
+
+=func _override_single( $spec, $env )
+
+Replaces the setting with the given environment variable if present.
+
+=cut
+
+sub _override_single {
+    my $spec = shift // {};
+    my $setting = shift or die "Required paramter missing";
+    my $env = shift // undef;
+
+    if ( defined($env) ) {
+        $spec->{$setting} = $env;
+    }
 }
 
 1;

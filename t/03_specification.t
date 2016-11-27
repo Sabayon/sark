@@ -69,7 +69,23 @@ subtest "default merging" => sub {
     # Check the merged document passes the dense spec validation
     my $spec = Sark::Specification->new;
     lives_ok { $spec->validate( $dense_spec, 0 ) }
-        'merged document validates against dense spec';
+    'merged document validates against dense spec';
+};
+
+subtest "environment overrides" => sub {
+    my $spec = {
+        repository => { description => "Test repo", },
+        build      => { target      => [ 'app-misc/foobar', ] }
+    };
+
+    Sark::Specification::_override_single( $spec->{build}, 'target',
+        ['app-misc/baz'] );
+    is( $spec->{build}->{target}[0], 'app-misc/baz', 'target override' );
+
+    Sark::Specification::_override_single( $spec->{repository},
+        'description', undef );
+    is( $spec->{repository}->{description}, "Test repo" );
+
 };
 
 done_testing;
