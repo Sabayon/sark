@@ -88,4 +88,25 @@ subtest "environment overrides" => sub {
 
 };
 
+subtest "full parse from string" => sub {
+    my $spec = Sark::Specification->new;
+
+    my $good_document = <<END;
+repository:
+  description: Test Repo
+build:
+  target:
+    - app-misc/foo
+END
+
+    $spec->parse_spec($good_document);
+
+    is( $spec->{spec}->{repository}->{description},
+        'Test Repo', 'repository description' );
+    is( scalar @{ $spec->{spec}->{build}->{target} },
+        1, 'build target count' );
+    is( $spec->{spec}->{build}->{target}[0], 'app-misc/foo', 'build target' );
+
+};
+
 done_testing;

@@ -239,21 +239,79 @@ sub validate {
     }
 }
 
-=method parse_spec
+=method parse_spec( $document, $sparse=1 )
 
+This is the main function for loading in a specification from a string. It will:
+- Parse the document into a data structure
+- If spares, will:
+  - Validate the sparse structure
+  - Merge in any defaults to make dense
+  - Merge in any overrides
+- Validate the dense document
+- Store the result in this specification object
+  
 =cut
 
 sub parse_spec {
-    my $self = shift;
+    my $self     = shift;
+    my $document = shift // "";
+    my $sparse   = shift // 1;
 
+    my $data = YAML::Tiny::Load($document);
+
+    if ($sparse) {
+        $self->validate($data);
+        $data = _make_dense_spec($data);
+        $data = _add_missing_defaults($data);
+    }
+
+    $self->validate( $data, 0 );
+
+    $self->{spec} = $data;
 }
 
-=method load_from_spec_file
+=method load_from_spec_file( $filename )
+
+Loads a sparse specification file from disk and automatically
+calls C<parse_spec> to parse and convert to a dense spec.
 
 =cut
 
 sub load_from_spec_file {
     my $self = shift;
+    my $filename = shift or die "Required filename missing";
+
+    my $contents;
+    do {
+        local $/;
+        open FILE, $filename or die "Couldn't open file: $!";
+        $contents = <FILE>;
+        close FILE;
+    };
+
+    $self->parse_spec( $contents, 1 );
+}
+
+=method load_from_cache_file
+
+Loads a dense specification file from disk and automatically
+calls C<parse_spec> to parse and validate the contents.
+
+=cut
+
+sub load_from_cache_file {
+    my $self = shift;
+    my $filename = shift or die "Required filename missing";
+
+    my $contents;
+    do {
+        local $/;
+        open FILE, $filename or die "Couldn't open file: $!";
+        $contents = <FILE>;
+        close FILE;
+    };
+
+    $self->parse_spec( $contents, 0 );
 }
 
 =method override_from_environment
@@ -270,8 +328,11 @@ sub override_from_environment {
 
     _override_single( $self->{spec}->{repository}->{maintenance},
         'check_diffs', $ENV{CHECK_BUILD_DIFFS} );
-    _override_single( $self->{spec}->{repository}->{maintenance},
-        'clean_cache', $ENV{CLEAN_CACHE} );
+    _override_single(
+        $self->{spec}->{repository}->{maintenance},
+        'clean_cache', $ENV;
+        {CLEAN_CACHE}
+    );
     _override_single( $self->{spec}->{build}->{docker},
         'image', $ENV{DOCKER_IMAGE} );
     _override_single( $self->{spec}->{build}->{docker},
@@ -288,21 +349,15 @@ sub override_from_environment {
         'webrsync', $ENV{WEBRSYNC} );
 }
 
-=method load_from_cache_file
-
-=cut
-
-sub load_from_cache_file {
-    my $self = shift;
-
-}
-
 =method save_to_cache_file
 
 =cut
 
 sub save_to_cache_file {
     my $self = shift;
+    my $filename = shift or die "Required filename missing";
+
+    YAML::Tiny::DumpFile( $filename, $self->{spec} );
 
 }
 
@@ -405,8 +460,6 @@ build:
     image: "sabayon/builder-amd64"
     entropy_image: "sabayon/eit-amd64"
 END
-    use Data::Dumper;
-    print Dumper($defaults);
 
     return merge( $spec, $defaults );
 }
