@@ -242,13 +242,28 @@ sub validate {
 =method parse_spec( $document, $sparse=1 )
 
 This is the main function for loading in a specification from a string. It will:
-- Parse the document into a data structure
-- If spares, will:
-  - Validate the sparse structure
-  - Merge in any defaults to make dense
-  - Merge in any overrides
-- Validate the dense document
-- Store the result in this specification object
+
+=over 4
+
+=item  Parse the document into a data structure
+
+=item If sparse, will:
+
+=over 4
+
+=item Validate the sparse structure
+
+=item Merge in any defaults to make dense
+
+=item Merge in any overrides
+
+=back
+
+=item Validate the dense document
+
+=item Store the result in this specification object
+
+=back
   
 =cut
 
@@ -347,6 +362,9 @@ sub override_from_environment {
 }
 
 =method save_to_cache_file
+
+Writes out the current specification in dense YAML format to the provided
+cache filename.
 
 =cut
 
