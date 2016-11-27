@@ -386,7 +386,7 @@ sub _make_dense_spec {
     return $result;
 }
 
-=fund _add_missing_defaults( $spec )
+=func _add_missing_defaults( $spec )
 
 Populates the given specification with any missing values using hardcoded
 defaults.
