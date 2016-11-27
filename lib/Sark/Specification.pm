@@ -328,11 +328,8 @@ sub override_from_environment {
 
     _override_single( $self->{spec}->{repository}->{maintenance},
         'check_diffs', $ENV{CHECK_BUILD_DIFFS} );
-    _override_single(
-        $self->{spec}->{repository}->{maintenance},
-        'clean_cache', $ENV;
-        {CLEAN_CACHE}
-    );
+    _override_single( $self->{spec}->{repository}->{maintenance},
+        'clean_cache', $ENV{CLEAN_CACHE} );
     _override_single( $self->{spec}->{build}->{docker},
         'image', $ENV{DOCKER_IMAGE} );
     _override_single( $self->{spec}->{build}->{docker},
