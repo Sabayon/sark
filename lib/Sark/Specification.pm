@@ -446,7 +446,7 @@ END
     return merge( $spec, $defaults );
 }
 
-=func override_from_environment
+=func override_from_environment( $spec )
 
 Updates the given specification with any overrides specified by
 environment variables. Only a subset of the build spec settings can be
