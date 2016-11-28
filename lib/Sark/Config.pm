@@ -101,24 +101,6 @@ sub initialize {
                     portage_tree      => '//str',
                 },
             },
-            logging => {
-                type     => '//rec',
-                optional => {
-                    level     => {
-                        type => '//any',
-                        of   => [
-                            {type => '//str', value => 'debug' },
-                            {type => '//str', value => 'verbose' },
-                            {type => '//str', value => 'info' },
-                            {type => '//str', value => 'notice' },
-                            {type => '//str', value => 'warning' },
-                            {type => '//str', value => 'error' },
-                        ],
-                    },
-                    location  => '//str',
-                    keep_days => '//num',
-                },
-            },
             notification => {
                 type     => '//rec',
                 optional => {
@@ -204,12 +186,16 @@ sub load_from_config_file {
     my $filename = shift or die "Required filename parameter missing";
 
     my $contents;
-    do {
-        local $/;
-        open FILE, $filename or die "Couldn't open file: $!";
-        $contents = <FILE>;
-        close FILE;
-    };
+    if (-f $filename) {
+        do {
+            local $/;
+            open FILE, $filename or die "Couldn't open file: $!";
+            $contents = <FILE>;
+            close FILE;
+        };
+    } else {
+        $contents = '';
+    }
 
     $self->parse_config($contents);
 }
@@ -247,10 +233,6 @@ caches:
   portage_artifacts: "$ENV{HOME}/sark/cache/portage_artifacts"
   portage_packages: "$ENV{HOME}/sark/cache/portage_packages"
   portage_tree: "$ENV{HOME}/sark/cache/portage_tree"
-logging:
-  level: "info"
-  location: "$ENV{HOME}/sark/logs"
-  keep_days: 0
 notification:
   irc:
     enabled: false
@@ -516,51 +498,6 @@ all repository builds. If you use portage on the build host, you Could
 point this to C</usr/portage>.
 
 Defaults to C<$HOME/sark/cache/portage_tree>.
-
-=back
-
-=item C<logging>
-
-=over 2
-
-=item C<level>
-
-Controls the verbosity of log messages output from Sark. Can be set to one
-
-Defaults to C<info>. Acceptable values are any of the following,
-in order from most to least verbose:
-
-=over 2
-
-=item debug
-
-=item verbose
-
-=item info
-
-=item notice
-
-=item warning
-
-=item error
-
-=back
-
-=item C<location>
-
-Path to the directory to which log files should be written. Log files will
-be placed in dated subdirectories, and will also including the build
-timestamp in the filename.
-
-Defaults to C<$HOME/sark/logs>.
-
-=item C<keep_days>
-
-Sark will automatically clean up log files older than this many days. If
-set to zero, clean up will be disabled and all logs will be kept indefinitely
-or until some other process cleans them up (e.g. logrotate).
-
-Defaults to C<0>, acceptable values are positive integers.
 
 =back
 

@@ -5,6 +5,8 @@ use Sark;
 use Deeme::Obj -base;
 has [qw( name )];
 
+use Log::Log4perl;
+
 =method prepare
 
 The C<prepare> method is called before the build is started and should be used to acquire any resources necessary to run the build, for example container disk images.
@@ -14,7 +16,8 @@ This method should also be used to clear any caches if a clean build is requeste
 =cut
 sub prepare {
     my $sark = Sark->new();
-    $sark->warning("Prepare method not implemented by engine");
+    my $logger = Log::Log4perl->get_logger('Sark::Engine');
+    $logger->warn("Prepare method not implemented by engine");
 }
 
 =method pre_clean()
@@ -24,7 +27,8 @@ The C<pre-clean> method is called to do any necessary cleanup before the compile
 =cut
 sub pre_clean {
     my $sark = Sark->new();
-    $sark->warning("Pre_clean method not implemented by engine");
+    my $logger = Log::Log4perl->get_logger('Sark::Engine');
+    $logger->warn("Pre_clean method not implemented by engine");
 }
 
 =method compile()
@@ -36,7 +40,8 @@ This method requires that all new packages are cached in the repository artifact
 =cut
 sub compile {
     my $sark = Sark->new();
-    $sark->warning("Compile method not implemented by engine");
+    my $logger = Log::Log4perl->get_logger('Sark::Engine');
+    $logger->warn("Compile method not implemented by engine");
 }
 
 =method publish()
@@ -46,7 +51,8 @@ The C<publish> method is called to update the repository with new packages.
 =cut
 sub publish {
     my $sark = Sark->new();
-    $sark->warning("Publish method not implemented by engine");
+    my $logger = Log::Log4perl->get_logger('Sark::Engine');
+    $logger->warn("Publish method not implemented by engine");
 }
 
 =method post_clean()
@@ -56,7 +62,8 @@ This C<post-clean> method is called after the publish phase and can be used to d
 =cut
 sub post_clean {
     my $sark = Sark->new();
-    $sark->warning("Post_clean method not implemented by engine");
+    my $logger = Log::Log4perl->get_logger('Sark::Engine');
+    $logger->warn("Post_clean method not implemented by engine");
 }
 
 

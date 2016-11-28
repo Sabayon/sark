@@ -1,12 +1,16 @@
 package Sark;
 use strict;
+use Carp;
 use Deeme::Obj 'Deeme';
-use Sark::Loader;
 use Locale::TextDomain 'Sark';
 use utf8;
 use Encode;
 use Locale::Messages qw(bind_textdomain_filter);
 use Term::ANSIColor;
+use Log::Log4perl;
+
+use Sark::Config;
+use Sark::Loader;
 
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
@@ -21,10 +25,14 @@ has [qw(plugin engine)];
 my $singleton;
 
 sub new {
-    $singleton ||= shift->SUPER::new(@_);
-    $singleton->init if !$singleton->{INITIALIZED};
-    $singleton->{LOG_LEVEL} = "info" if !$singleton->{LOG_LEVEL};
-    $singleton;
+    my $class = shift;
+    
+    $singleton ||= $class->SUPER::new(@_);
+    if ( ! $singleton->{INITIALIZED} ) {
+        $singleton->init;
+    }
+    
+    return $singleton;
 }
 
 # Re-emits emit events for further inspection and statistics plugin.
@@ -41,11 +49,68 @@ sub emit {
 # Init sequence when initialized first time
 sub init {
     my $self = shift;
+        
+    $self->{CONFIG_FILE}         //= "$ENV{HOME}/sark/config.yaml";
+    $self->{LOGGING_CONFIG_FILE} //= "$ENV{HOME}/sark/logging.conf";
+    $self->{LOG_QUIET}           //= 0;
+    $self->{LOG_VERBOSE}         //= 0;
+    $self->{LOG_DEBUG}           //= 0;
+    
+    my $log_level;
+    if ($self->{LOG_DEBUG}) {
+        $log_level = 'DEBUG';
+    } elsif ($self->{LOG_VERBOSE}) {
+        $log_level = 'INFO';
+    } else {
+        $log_level = 'WARN';
+    }
+    
+    my $screen_layout_pattern = '[%p %c] %m%n';
+    if ($self->{LOG_QUIET}) {
+        $screen_layout_pattern = '%m%n';
+    }
+    
+    my $logger;
+    if ( -f $self->{LOGGING_CONFIG_FILE}) {
+        Log::Log4perl->init($self->{LOGGING_CONFIG_FILE});
+        $logger = Log::Log4perl->get_logger();
+
+        # If --verbose or --debug cli options were present, override
+        # the log level from the config file here
+        if ($self->{LOG_DEBUG} || $self->{LOG_VERBOSE}) {
+            $logger->level($log_level);
+        }
+    } else {
+        my $default_logging_config = <<END;
+log4perl.category                  = $log_level, Logfile, Screen
+
+log4perl.appender.Logfile          = Log::Log4perl::Appender::File
+log4perl.appender.Logfile.filename = $ENV{HOME}/sark/logs/sark.log
+log4perl.appender.Logfile.mkpath   = 1
+log4perl.appender.Logfile.layout   = Log::Log4perl::Layout::PatternLayout
+log4perl.appender.Logfile.layout.ConversionPattern = [\%d \%p \%c] \%m\%n
+
+log4perl.appender.Screen         = Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr  = 1
+log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
+log4perl.appender.Screen.layout.ConversionPattern = $screen_layout_pattern
+END
+
+        Log::Log4perl->init( \$default_logging_config );
+        $logger = Log::Log4perl->get_logger();
+        $logger->warn("No logging config file present, falling back to default logging. Create $ENV{HOME}/sark/logging.conf, or specify --logging_config to an alternate location to customise logging and suppress this message.");
+    }
+    
+    $logger->debug("Logging initialized");
+    
     $self->_register_namespace("Plugin");
     $self->_register_namespace("Engine");
+    
+    $self->{config} = Sark::Config->new;
+    $self->{config}->load_from_config_file($self->{CONFIG_FILE});
+    
     $self->emit("init");
     $singleton->{INITIALIZED}++;
-    return $self;
 }
 
 # Register an entire Sark::namespace
@@ -79,58 +144,19 @@ sub load_engine {
     $self->_register_module("Sark::Engine::${Plugin}");
 }
 
-sub error {
-    my $self = shift;
-    my @msg  = @_;
-    if ( $self->{LOG_LEVEL} eq "info" ) {
-        print STDERR color 'bold red';
-        print STDERR encode_utf8('☢☢☢ ☛  ');
-        print STDERR color 'bold white';
-        print STDERR join( "\n", @msg ), "\n";
-        print STDERR color 'reset';
+sub bool {
+    my $value = shift // 0;
+    
+    if ($value == 1) {
+        return 1;
+    } elsif ($value == 0) {
+        return 0;
+    } elsif ($value =~ /^(?:y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|)$/) {
+        return 1;
+    } else {
+        return 0;
     }
-    elsif ( $self->{LOG_LEVEL} eq "quiet" ) {
-        print join( "\n", @msg ), "\n";
-    }
-}
 
-sub info {
-    my $self = shift;
-
-    my @msg = @_;
-    if ( $self->{LOG_LEVEL} eq "info" ) {
-        print color 'bold green';
-        print encode_utf8('╠ ');
-        print color 'bold white';
-        print join( "\n", @msg ), "\n";
-        print color 'reset';
-    }
-    elsif ( $self->{LOG_LEVEL} eq "quiet" ) {
-        print join( "\n", @msg ), "\n";
-    }
-}
-
-sub notice {
-    my $self = shift;
-    my @msg  = @_;
-    if ( $self->{LOG_LEVEL} eq "info" ) {
-        print STDERR color 'bold yellow';
-        print STDERR encode_utf8('☛ ');
-        print STDERR color 'bold white';
-        print STDERR join( "\n", @msg ), "\n";
-        print STDERR color 'reset';
-    }
-    elsif ( $self->{LOG_LEVEL} eq "quiet" ) {
-        print STDERR join( "\n", @msg ), "\n";
-    }
-}
-
-sub loglevel {
-    my $self = shift;
-
-    $self->{LOG_LEVEL} = $_[0] if $_[0];
-
-    return $self->{LOG_LEVEL};
 }
 
 *instance = \&new;

@@ -6,6 +6,7 @@ use strict;
 
 use CLI::Framework::Exceptions qw( :all );
 use Sark;
+use Log::Log4perl;
 
 sub usage_text {
     "sark repo disable <repo_name> [...]";
@@ -20,8 +21,11 @@ sub validate {
 }
 
 sub run {
+    my ($opts, @args) = @_;
+    
     my $sark = Sark->new();
-    $sark->error("repo disable not implemented yet");
+    my $logger = Log::Log4perl->get_logger('Sark::Command::Repo::Disable');
+    $logger->error("repo disable not implemented yet");
 }
 
 1;

@@ -17,7 +17,7 @@ git.
 sub sync {
     my $class = shift;
 
-    my $self->{sark} = Sark->new();
+    my $sark = Sark->new();
 
 }
 
@@ -29,9 +29,21 @@ Returns a list of all available repository names
 
 sub list {
     my $class = shift;
+    my $sark = Sark->new();
+    
+    my $logger = Log::Log4perl->get_logger('Sark::Repo');
 
-    my $self->{sark} = Sark->new();
-
+    my $repo_dir = $sark->{config}->{data}->{repositories}->{definitions};
+    if (-d $repo_dir) {
+        opendir(my $dh, $repo_dir) or die "Cannot open repositories directory: $!";
+        my @repos = grep { ! /^\./ && -d "$repo_dir/$_" } readdir($dh);
+        closedir $dh;
+        
+        return sort(@repos);
+    } else {
+        $logger->error("Failed to list repositories: no such file or directory: $repo_dir");
+    }
+    
 }
 
 =method enabled
@@ -43,7 +55,7 @@ Returns a list of all enabled repository names
 sub enabled {
     my $class = shift;
 
-    my $self->{sark} = Sark->new();
+    my $sark = Sark->new();
 
 }
 
@@ -56,7 +68,7 @@ Returns a list of all disabled repository names
 sub disabled {
     my $class = shift;
 
-    my $self->{sark} = Sark->new();
+    my $sark = Sark->new();
 
 }
 
@@ -93,6 +105,7 @@ sub initialize {
     my $self = shift;
     my $sparse = shift or die "Required sparse parameter missing";
 
+    $self->{sark} = Sark->new();
 }
 
 =method enable
@@ -107,8 +120,6 @@ Enabled repositories are included when building all repositories.
 
 sub enable {
     my $self = shift;
-
-    my $self->{sark} = Sark->new();
 
 }
 
@@ -125,8 +136,6 @@ but can still be built manually on demand.
 
 sub disable {
     my $self = shift;
-
-    my $self->{sark} = Sark->new();
 
 }
 

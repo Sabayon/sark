@@ -5,14 +5,21 @@ use warnings;
 use strict;
 
 use Sark;
+use Sark::Repo;
 
 sub usage_text {
     "sark repo list";
 }
 
 sub run {
-    my $sark = Sark->new();
-    $sark->error("repo list not implemented yet");
+    my ($opts, @args) = @_;
+    my $sark = Sark->new;
+    
+    my @repos = Sark::Repo::list();
+    
+    return {
+        lines => \@repos,
+    };
 }
 
 1;
