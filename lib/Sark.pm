@@ -11,6 +11,7 @@ use Log::Log4perl;
 
 use Sark::Config;
 use Sark::Loader;
+use Sark::Utils qw(uniq);
 
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
@@ -18,6 +19,10 @@ BEGIN {
     bind_textdomain_filter 'Sark' => \&Encode::decode_utf8;
 }
 our $VERSION = 0.01;
+
+# plugin and engine are the Sark runtime loaded plugin/engines list.
+# If filled, will load the declared plugins/engines in runtime when creating the instance
+has [qw(plugin engine)] => sub { [] };
 
 # Singleton class
 my $singleton;
@@ -109,37 +114,44 @@ END
     $self->{config} = Sark::Config->new;
     $self->{config}->load_from_config_file( $self->{CONFIG_FILE} );
 
-    $self->_register_namespace( "Sark::Engine",
-        $self->{config}->{data}->{build}->{engines} );
-
-    $self->_register_namespace( "Sark::Plugin",
-        $self->{config}->{data}->{build}->{plugins} );
+    $self->_register_namespace(
+        "Sark::Engine",
+        uniq(
+            @{ $self->{config}->{data}->{build}->{engines} },
+            @{ $self->engine() }
+        )
+    );
+    $self->_register_namespace(
+        "Sark::Plugin",
+        uniq(
+            @{ $self->{config}->{data}->{build}->{plugins} },
+            @{ $self->plugin() }
+        )
+    );
 
     $self->emit("init");
     $singleton->{INITIALIZED}++;
+    return $self;
 }
 
 # Register an entire Sark::namespace
 sub _register_namespace {
-    my ( $self, $ns, $modules_list ) = @_;
+    my ( $self, $ns, @modules ) = @_;
 
     # If no modules are provided, load them all
-    my @modules;
-    if ( defined($modules_list) ) {
-        @modules = @{$modules_list};
-    }
-    else {
-        @modules = Sark::Loader->search($ns);
-    }
+    #
+    @modules = Sark::Loader->search($ns) unless @modules > 0;
+    my $group = lc( ( split( /::/, $ns ) )[1] ); # Get plugin/engine namespace
 
     for (@modules) {
         next unless defined $_;
-
-        my $module = $_;
-        $module = $ns . '::' . ucfirst($module)
-            unless $module =~ /^\Q${ns}\E/;
-
-        $self->_register_module($module);
+        if ( $group eq "engine" ) {
+            $self->load_engine( ucfirst( lc( ( split( /::/, $_ ) )[-1] ) ) )
+                ; # load the engine/plugin, take its name from the last position from the array formed by the split of "::" from the package name;
+        }
+        elsif ( $group eq "plugin" ) {
+            $self->load_plugin( ucfirst( lc( ( split( /::/, $_ ) )[-1] ) ) );
+        }
     }
 }
 
@@ -156,18 +168,34 @@ sub _register_module {
     else {
         $self->{logger}
             ->debug("Skipped module $Plugin: no 'register' method.");
+        return 0;
     }
+    return 1;
 }
 
 # Register a plugin/engine
 sub load_plugin {
     my ( $self, $Plugin ) = @_;
-    $self->_register_module("Sark::Plugin::${Plugin}");
+    $self->plugin( [ @{ $self->plugin() }, ucfirst($Plugin) ] )
+        unless !$self->_register_module("Sark::Plugin::${Plugin}");
+    return $self;
 }
 
 sub load_engine {
     my ( $self, $Plugin ) = @_;
-    $self->_register_module("Sark::Engine::${Plugin}");
+    $self->engine( [ @{ $self->engine() }, ucfirst($Plugin) ] )
+        unless !$self->_register_module("Sark::Engine::${Plugin}");
+    return $self;
+}
+
+sub loaded {
+    my ( $self, $Plugin ) = @_;
+
+    #return 0 if !$self->plugin;
+    foreach my $plugin_loaded ( @{ $self->plugin() }, @{ $self->engine() } ) {
+        return 1 if ( $plugin_loaded eq $Plugin );
+    }
+    return 0;
 }
 
 sub bool {
