@@ -98,7 +98,7 @@ END
 
         Log::Log4perl->init( \$default_logging_config );
         $logger = Log::Log4perl->get_logger();
-        $logger->warn("No logging config file present, falling back to default logging. Create $ENV{HOME}/sark/logging.conf, or specify --logging_config to an alternate location to customise logging and suppress this message.");
+        $logger->info("Using default logging. Create $ENV{HOME}/sark/logging.conf, or use --logging_config to specify an alternate location to customise logging and suppress this message.");
     }
     
     $logger->debug("Logging initialized");
