@@ -11,14 +11,25 @@ sub class_to_path { join '.', join( '/', split /::|'/, shift ), 'pm' }
 sub load {
     my ( $self, $module ) = @_;
 
+    my $logger = Log::Log4perl->get_logger('Sark::Loader');
+
     # Check module name
-    return 1 if !$module || $module !~ /^\w(?:[\w:']*\w)?$/;
+    if ( !$module || $module !~ /^\w(?:[\w:']*\w)?$/ ) {
+        $logger->debug("Skipping module '${module}' due to invalid name");
+        return 1;
+    }
 
     # Load
-    return undef if $module->can('new') || eval "require $module; 1";
+    if ( $module->can('new') || eval "require $module; 1" ) {
+        return undef;
+    }
 
     # Exists
-    return 1 if $@ =~ /^Can't locate \Q@{[class_to_path $module]}\E in \@INC/;
+    if ( $@ =~ /^Can't locate \Q@{[class_to_path $module]}\E in \@INC/ ) {
+        $logger->debug(
+            "Failed to load ${module}, cannot locate file on disk");
+        return 1;
+    }
 
     # Real error
     return croak($@);
@@ -37,9 +48,10 @@ sub search {
             next if -d catfile splitdir($path), $file;
             $modules{ "${ns}::" . fileparse $file, qr/\.pm/ }++;
         }
+        closedir $dir;
     }
 
-    return [ keys %modules ];
+    return keys %modules;
 }
 
 1;

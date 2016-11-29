@@ -19,19 +19,17 @@ BEGIN {
 }
 our $VERSION = 0.01;
 
-has [qw(plugin engine)];
-
 # Singleton class
 my $singleton;
 
 sub new {
     my $class = shift;
-    
+
     $singleton ||= $class->SUPER::new(@_);
-    if ( ! $singleton->{INITIALIZED} ) {
+    if ( !$singleton->{INITIALIZED} ) {
         $singleton->init;
     }
-    
+
     return $singleton;
 }
 
@@ -49,38 +47,40 @@ sub emit {
 # Init sequence when initialized first time
 sub init {
     my $self = shift;
-        
+
     $self->{CONFIG_FILE}         //= "$ENV{HOME}/sark/config.yaml";
     $self->{LOGGING_CONFIG_FILE} //= "$ENV{HOME}/sark/logging.conf";
     $self->{LOG_QUIET}           //= 0;
     $self->{LOG_VERBOSE}         //= 0;
     $self->{LOG_DEBUG}           //= 0;
-    
+
     my $log_level;
-    if ($self->{LOG_DEBUG}) {
+    if ( $self->{LOG_DEBUG} ) {
         $log_level = 'DEBUG';
-    } elsif ($self->{LOG_VERBOSE}) {
+    }
+    elsif ( $self->{LOG_VERBOSE} ) {
         $log_level = 'INFO';
-    } else {
+    }
+    else {
         $log_level = 'WARN';
     }
-    
+
     my $screen_layout_pattern = '[%p %c] %m%n';
-    if ($self->{LOG_QUIET}) {
+    if ( $self->{LOG_QUIET} ) {
         $screen_layout_pattern = '%m%n';
     }
-    
-    my $logger;
-    if ( -f $self->{LOGGING_CONFIG_FILE}) {
-        Log::Log4perl->init($self->{LOGGING_CONFIG_FILE});
-        $logger = Log::Log4perl->get_logger();
+
+    if ( -f $self->{LOGGING_CONFIG_FILE} ) {
+        Log::Log4perl->init_once( $self->{LOGGING_CONFIG_FILE} );
+        $self->{logger} = Log::Log4perl->get_logger();
 
         # If --verbose or --debug cli options were present, override
         # the log level from the config file here
-        if ($self->{LOG_DEBUG} || $self->{LOG_VERBOSE}) {
-            $logger->level($log_level);
+        if ( $self->{LOG_DEBUG} || $self->{LOG_VERBOSE} ) {
+            $self->{logger}->level($log_level);
         }
-    } else {
+    }
+    else {
         my $default_logging_config = <<END;
 log4perl.category                  = $log_level, Logfile, Screen
 
@@ -97,18 +97,22 @@ log4perl.appender.Screen.layout.ConversionPattern = $screen_layout_pattern
 END
 
         Log::Log4perl->init( \$default_logging_config );
-        $logger = Log::Log4perl->get_logger();
-        $logger->info("Using default logging. Create $ENV{HOME}/sark/logging.conf, or use --logging_config to specify an alternate location to customise logging and suppress this message.");
+        $self->{logger} = Log::Log4perl->get_logger();
+        $self->{logger}->info(
+            "Using default logging. Create $ENV{HOME}/sark/logging.conf,"
+            . " or use --logging_config to specify an alternate location"
+            . "to customise logging and suppress this message."
+        );
     }
-    
-    $logger->debug("Logging initialized");
-    
+
+    $self->{logger}->debug("Logging initialized");
+
     $self->_register_namespace("Plugin");
     $self->_register_namespace("Engine");
-    
+
     $self->{config} = Sark::Config->new;
-    $self->{config}->load_from_config_file($self->{CONFIG_FILE});
-    
+    $self->{config}->load_from_config_file( $self->{CONFIG_FILE} );
+
     $self->emit("init");
     $singleton->{INITIALIZED}++;
 }
@@ -116,11 +120,11 @@ END
 # Register an entire Sark::namespace
 sub _register_namespace {
     my ( $self, $ns ) = @_;
-    my $ns_lc = lc($ns);
-    if ( my @PLUGINS = $self->$ns_lc ) {
-        for (@PLUGINS) {
+    if ( my @modules = Sark::Loader->search("Sark::${ns}") ) {
+        for (@modules) {
             next if !defined $_;
-            $self->_register_module( "Sark::${ns}::" . ucfirst($_) );
+            my $module = ucfirst($_);
+            $self->_register_module($module);
         }
     }
 }
@@ -130,7 +134,15 @@ sub _register_module {
     my ( $self, $Plugin ) = @_;
     return if Sark::Loader->new->load($Plugin);
     my $inst = $Plugin->new;
-    $inst->register($self) if ( $inst->can("register") );
+
+    if ( $inst->can("register") ) {
+        $inst->register($self);
+        $self->{logger}->info("Registered module $Plugin");
+    }
+    else {
+        $self->{logger}
+            ->debug("Skipped module $Plugin: no 'register' method.");
+    }
 }
 
 # Register a plugin/engine
@@ -146,14 +158,17 @@ sub load_engine {
 
 sub bool {
     my $value = shift // 0;
-    
-    if ($value == 1) {
+
+    if ( $value == 1 ) {
         return 1;
-    } elsif ($value == 0) {
+    }
+    elsif ( $value == 0 ) {
         return 0;
-    } elsif ($value =~ /^(?:y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|)$/) {
+    }
+    elsif ( $value =~ /^(?:y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|)$/ ) {
         return 1;
-    } else {
+    }
+    else {
         return 0;
     }
 
