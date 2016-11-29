@@ -191,7 +191,7 @@ sub load_engine {
 sub loaded {
     my ( $self, $Plugin ) = @_;
 
-    #return 0 if !$self->plugin;
+    return 0 if !@{ $self->plugin } and !@{ $self->engine };
     foreach my $plugin_loaded ( @{ $self->plugin() }, @{ $self->engine() } ) {
         return 1 if ( $plugin_loaded eq $Plugin );
     }

@@ -22,7 +22,7 @@ subtest "loading with env" => sub {
     is( Sark->instance->loaded("Test"),
         1, "There is one plugin, Test, loaded" );
     is( Sark->instance->loaded("Docker"),
-        1, "There is one plugin, Docker, loaded" );
+        1, "There is one engine, Docker, loaded" );
 
     # Emit plugin.test
     Sark->instance->emit("plugin.test");
