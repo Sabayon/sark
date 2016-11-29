@@ -74,14 +74,23 @@ sub initialize {
                     deploy   => '/sark/bool',
                 },
             },
+            build => {
+                type     => '//rec',
+                optional => {
+                    engines => {
+                        type     => '//arr',
+                        contents => '//str',
+                    },
+                },
+            },
             docker => {
                 type     => '//rec',
                 optional => {
                     commit_images => '/sark/bool',
                     push_images   => '/sark/bool',
                     capabilities  => {
-                        type       => '//arr',
-                        contents   => '//str',
+                        type     => '//arr',
+                        contents => '//str',
                     },
                     entrypoint => '//str',
                     opts       => '//str',
@@ -186,7 +195,7 @@ sub load_from_config_file {
     my $filename = shift or die "Required filename parameter missing";
 
     my $contents;
-    if (-f $filename) {
+    if ( -f $filename ) {
         do {
             local $/;
             open FILE, $filename or die "Couldn't open file: $!";
@@ -219,6 +228,9 @@ phases:
   publish: true
   metadata: true
   deploy: false
+build:
+  engines:
+    - Docker
 docker:
   commit_images: true
   push_images: true
@@ -260,6 +272,8 @@ sub _override_from_environment {
         'definitions', $ENV{SARK_REPOSITORY_DEFINITIONS} );
     _override_single( $config->{repositories},
         'url', $ENV{REPOSITORY_SPECS} );
+    _override_single( $config->{build},
+        'engine', split( ' ', $ENV{SARK_BUILD_ENGINE} ) );
 
     return $config;
 }
@@ -370,6 +384,25 @@ another server via rsync. If you pull updates from the remote server, this
 phase can be safey disabled.
 
 Defaults to C<false>, acceptable values are boolean.
+
+=back
+
+=item C<build>
+
+=over 2
+
+=item C<engine>
+
+The list of engines which should be loaded to run builds.
+At the moment only the C<Docker> engine is provided, but this option
+remains to allow for future expansion. Each engine will be signalled when
+each build phase needs to be run. It's up to the build engine to only
+run appropriate build actions, and up to the user to ensure the correct
+combination of engines are loaded.
+
+Defaults to a list containing just C<Docker>.
+
+Can be overridden using the C<SARK_BUILD_ENGINE> environment variable.
 
 =back
 

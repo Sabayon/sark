@@ -100,18 +100,29 @@ END
         $self->{logger} = Log::Log4perl->get_logger();
         $self->{logger}->info(
             "Using default logging. Create $ENV{HOME}/sark/logging.conf,"
-            . " or use --logging_config to specify an alternate location"
-            . "to customise logging and suppress this message."
-        );
+                . " or use --logging_config to specify an alternate location"
+                . "to customise logging and suppress this message." );
     }
 
     $self->{logger}->debug("Logging initialized");
 
-    $self->_register_namespace("Plugin");
-    $self->_register_namespace("Engine");
-
     $self->{config} = Sark::Config->new;
     $self->{config}->load_from_config_file( $self->{CONFIG_FILE} );
+
+    $self->_register_namespace("Plugin");
+
+    my @available_engines = Sark::Loader->search('Sark::Engine');
+    my @engines           = @{ $self->{config}->{data}->{build}->{engines} };
+    for my $engine (@engines) {
+        if ( grep {/^Sark::Engine::\Q$engine\E$/} @available_engines ) {
+            $self->_register_module("Sark::Engine::${engine}");
+        }
+        else {
+            $self->{logger}->error(
+                "Unknown Engine plugin '$engine' ignored; please check configuration."
+            );
+        }
+    }
 
     $self->emit("init");
     $singleton->{INITIALIZED}++;
