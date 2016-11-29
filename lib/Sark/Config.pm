@@ -81,6 +81,10 @@ sub initialize {
                         type     => '//arr',
                         contents => '//str',
                     },
+                    plugins => {
+                        type     => '//arr',
+                        contents => '//str',
+                    }
                 },
             },
             docker => {
@@ -177,6 +181,7 @@ sub parse_config {
     my $data = YAML::Tiny::Load($document);
 
     $data = _add_missing_defaults($data);
+    $data = _override_from_environment($data);
 
     $self->validate($data);
 
@@ -202,7 +207,8 @@ sub load_from_config_file {
             $contents = <FILE>;
             close FILE;
         };
-    } else {
+    }
+    else {
         $contents = '';
     }
 
@@ -231,6 +237,7 @@ phases:
 build:
   engines:
     - Docker
+  plugins: []
 docker:
   commit_images: true
   push_images: true
@@ -273,7 +280,9 @@ sub _override_from_environment {
     _override_single( $config->{repositories},
         'url', $ENV{REPOSITORY_SPECS} );
     _override_single( $config->{build},
-        'engine', split( ' ', $ENV{SARK_BUILD_ENGINE} ) );
+        'engines', $ENV{SARK_BUILD_ENGINE}, ' ' );
+    _override_single( $config->{build},
+        'plugins', $ENV{SARK_BUILD_PLUGINS}, ' ' );
 
     return $config;
 }
@@ -294,9 +303,15 @@ sub _override_single {
     my $config = shift // {};
     my $setting = shift or die "Required setting paramter missing";
     my $value = shift // undef;
+    my $split = shift // undef;
 
     if ( defined($value) ) {
-        $config->{$setting} = $value;
+        if ( defined($split) ) {
+            $config->{$setting} = [ split( $split, $value ) ];
+        }
+        else {
+            $config->{$setting} = $value;
+        }
     }
 }
 
@@ -391,9 +406,10 @@ Defaults to C<false>, acceptable values are boolean.
 
 =over 2
 
-=item C<engine>
+=item C<engines>
 
 The list of engines which should be loaded to run builds.
+
 At the moment only the C<Docker> engine is provided, but this option
 remains to allow for future expansion. Each engine will be signalled when
 each build phase needs to be run. It's up to the build engine to only
@@ -403,6 +419,15 @@ combination of engines are loaded.
 Defaults to a list containing just C<Docker>.
 
 Can be overridden using the C<SARK_BUILD_ENGINE> environment variable.
+
+=item C<plugins>
+
+The list of plugins which should be loaded while running builds.
+
+Plugins can hook into the build events and react accordingly. Any number
+of plugins can be loaded at once and can all react to the same events.
+
+Defaults to an empty list.
 
 =back
 

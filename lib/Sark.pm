@@ -109,20 +109,11 @@ END
     $self->{config} = Sark::Config->new;
     $self->{config}->load_from_config_file( $self->{CONFIG_FILE} );
 
-    $self->_register_namespace("Plugin");
+    $self->_register_namespace( "Sark::Engine",
+        $self->{config}->{data}->{build}->{engines} );
 
-    my @available_engines = Sark::Loader->search('Sark::Engine');
-    my @engines           = @{ $self->{config}->{data}->{build}->{engines} };
-    for my $engine (@engines) {
-        if ( grep {/^Sark::Engine::\Q$engine\E$/} @available_engines ) {
-            $self->_register_module("Sark::Engine::${engine}");
-        }
-        else {
-            $self->{logger}->error(
-                "Unknown Engine plugin '$engine' ignored; please check configuration."
-            );
-        }
-    }
+    $self->_register_namespace( "Sark::Plugin",
+        $self->{config}->{data}->{build}->{plugins} );
 
     $self->emit("init");
     $singleton->{INITIALIZED}++;
@@ -130,13 +121,25 @@ END
 
 # Register an entire Sark::namespace
 sub _register_namespace {
-    my ( $self, $ns ) = @_;
-    if ( my @modules = Sark::Loader->search("Sark::${ns}") ) {
-        for (@modules) {
-            next if !defined $_;
-            my $module = ucfirst($_);
-            $self->_register_module($module);
-        }
+    my ( $self, $ns, $modules_list ) = @_;
+
+    # If no modules are provided, load them all
+    my @modules;
+    if ( defined($modules_list) ) {
+        @modules = @{$modules_list};
+    }
+    else {
+        @modules = Sark::Loader->search($ns);
+    }
+
+    for (@modules) {
+        next unless defined $_;
+
+        my $module = $_;
+        $module = $ns . '::' . ucfirst($module)
+            unless $module =~ /^\Q${ns}\E/;
+
+        $self->_register_module($module);
     }
 }
 
