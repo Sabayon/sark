@@ -140,7 +140,7 @@ sub _register_namespace {
 
     # If no modules are provided, load them all
     #
-    @modules = Sark::Loader->search($ns) unless @modules > 0;
+    # @modules = Sark::Loader->search($ns) unless @modules > 0;
     my $group = lc( ( split( /::/, $ns ) )[1] ); # Get plugin/engine namespace
 
     for (@modules) {
