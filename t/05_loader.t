@@ -10,10 +10,9 @@ subtest "namespace search" => sub {
 
     my @modules = Sark::Loader->search('Sark::Plugin');
 
-    is( $modules[0], 'Sark::Plugin::Test',
-        'Searching Sark::Plugin should find Test' );
+    is( grep( /Sark::Plugin::Test/, @modules ),
+        2, 'Searching Sark::Plugin should find Test and Test1' );
 
 };
 
 done_testing;
-

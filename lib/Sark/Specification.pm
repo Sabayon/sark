@@ -16,7 +16,8 @@ use Sark::RxType::Repository;
 use Hash::Merge qw( merge );
 use YAML::Tiny;
 
-my @EXPORT_OK = qw( _add_missing_defaults _make_dense_spec _override_from_environment _override_single );
+my @EXPORT_OK =
+    qw( _add_missing_defaults _make_dense_spec _override_from_environment _override_single );
 
 =method new
 
@@ -462,21 +463,17 @@ sub _override_from_environment {
         'check_diffs', $ENV{CHECK_BUILD_DIFFS} );
     _override_single( $spec->{repository}->{maintenance},
         'clean_cache', $ENV{CLEAN_CACHE} );
-    _override_single( $spec->{build}->{docker},
-        'image', $ENV{DOCKER_IMAGE} );
+    _override_single( $spec->{build}->{docker}, 'image', $ENV{DOCKER_IMAGE} );
     _override_single( $spec->{build}->{docker},
         'entropy_image', $ENV{DOCKER_EIT_IMAGE} );
-    _override_single( $spec->{build}->{equo},
-        'no_cache', $ENV{ETP_NOCACHE} );
+    _override_single( $spec->{build}->{equo}, 'no_cache', $ENV{ETP_NOCACHE} );
     _override_single( $spec->{build}->{emerge},
         'default_args', $ENV{EMERGE_DEFAULT_ARGS} );
-    _override_single( $spec->{build}->{emerge},
-        'features', $ENV{FEATURES} );
+    _override_single( $spec->{build}->{emerge}, 'features', $ENV{FEATURES} );
     _override_single( $spec->{build}->{emerge},
         'profile', $ENV{BUILDER_PROFILE} );
-    _override_single( $spec->{build}->{emerge},
-        'webrsync', $ENV{WEBRSYNC} );
-        
+    _override_single( $spec->{build}->{emerge}, 'webrsync', $ENV{WEBRSYNC} );
+
     return $spec;
 }
 

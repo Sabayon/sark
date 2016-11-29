@@ -16,23 +16,22 @@ options/arguments are handled
 =cut
 
 sub option_spec {
-    (
-        [ 'help|h'     => 'show help' ],
-        [ 'quiet|q'    => 'produce script-friendly output', {
-            default => 0,
-        }],
-        [ 'verbose|v'  => 'show verbose output', {
-            default => 0,
-        }],
-        [ 'debug|d'    => 'show debug output', {
-            default => 0,
-        }],
-        [ 'config|c=s' => 'config file', {
-            default => "$ENV{HOME}/sark/config.yaml",
-        }],
-        [ 'logging_config|l=s' => 'logging config file', {
-            default => "$ENV{HOME}/sark/logging.conf",
-        }],
+    (   [ 'help|h' => 'show help' ],
+        [   'quiet|q' => 'produce script-friendly output',
+            { default => 0, }
+        ],
+        [   'verbose|v' => 'show verbose output',
+            { default => 0, }
+        ],
+        [   'debug|d' => 'show debug output',
+            { default => 0, }
+        ],
+        [   'config|c=s' => 'config file',
+            { default => "$ENV{HOME}/sark/config.yaml", }
+        ],
+        [   'logging_config|l=s' => 'logging config file',
+            { default => "$ENV{HOME}/sark/logging.conf", }
+        ],
     );
 }
 
@@ -43,9 +42,7 @@ This hook maps subcommane names/aliases to the implementation classes.
 =cut
 
 sub command_map {
-    (
-        'repo' => 'Sark::Command::Repo',
-    );
+    ( 'repo' => 'Sark::Command::Repo', );
 }
 
 =method usage_text
@@ -97,17 +94,18 @@ options.
 =cut
 
 sub init {
-    my ($self, $opts) = @_;
-    
+    my ( $self, $opts ) = @_;
+
     # This will be the first time Sark is accessed
     # so pass in the configuration options to initialize it
-    my $sark = Sark->new({
-        CONFIG_FILE         => $opts->{config},
-        LOGGING_CONFIG_FILE => $opts->{logging_config},
-        LOG_QUIET           => $opts->{quiet},
-        LOG_VERBOSE         => $opts->{verbose},
-        LOG_DEBUG           => $opts->{debug},
-    });
+    my $sark = Sark->new(
+        {   CONFIG_FILE         => $opts->{config},
+            LOGGING_CONFIG_FILE => $opts->{logging_config},
+            LOG_QUIET           => $opts->{quiet},
+            LOG_VERBOSE         => $opts->{verbose},
+            LOG_DEBUG           => $opts->{debug},
+        }
+    );
 }
 
 =method render( $output )
@@ -120,11 +118,12 @@ TODO: template this, using the C<template> key as the template filename.
 =cut
 
 sub render {
-    my ($self, $output) = @_;
-    
-    if (ref($output) eq "HASH") {
-        print join("\n", @{$output->{lines}}), "\n";
-    } else {
+    my ( $self, $output ) = @_;
+
+    if ( ref($output) eq "HASH" ) {
+        print join( "\n", @{ $output->{lines} } ), "\n";
+    }
+    else {
         die $output;
     }
 }

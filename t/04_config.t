@@ -18,7 +18,7 @@ repositories:
 END
 
     lives_ok { $config->validate($good_document) }
-        'good document validates against config schema';
+    'good document validates against config schema';
 };
 
 subtest "default merging" => sub {
@@ -32,30 +32,31 @@ END
     # Check a variety of settings
     ok( defined( $full_config->{repositories}->{definitions} ),
         'repositories: definitions' );
-    ok( defined( $full_config->{repositories}->{url} ),
-        'repositories: url' );
+    ok( defined( $full_config->{repositories}->{url} ), 'repositories: url' );
 
     # Check the merged document passes the schema validation
     my $config = Sark::Config->new;
-    lives_ok { $config->validate( $good_document) }
-        'merged document validates against config schema';
+    lives_ok { $config->validate($good_document) }
+    'merged document validates against config schema';
 };
 
 subtest "environment overrides" => sub {
     my $config = {
         repositories => {
             definitions => "/one/sark/repositories",
-            url         => "https://github.com/Sabayon/community-repositories-fork.git"
+            url =>
+                "https://github.com/Sabayon/community-repositories-fork.git"
         },
     };
 
-    Sark::Config::_override_single( $config->{repositories}, 'definitions',
-        '/two/sark/repositories' );
-    is( $config->{repositories}->{definitions}, '/two/sark/repositories', 'definitions override' );
-
     Sark::Config::_override_single( $config->{repositories},
-        'url', undef );
-    is( $config->{repositories}->{url}, "https://github.com/Sabayon/community-repositories-fork.git" );
+        'definitions', '/two/sark/repositories' );
+    is( $config->{repositories}->{definitions},
+        '/two/sark/repositories', 'definitions override' );
+
+    Sark::Config::_override_single( $config->{repositories}, 'url', undef );
+    is( $config->{repositories}->{url},
+        "https://github.com/Sabayon/community-repositories-fork.git" );
 
 };
 
@@ -72,9 +73,10 @@ END
     is( $config->{data}->{repositories}->{definitions},
         '/tmp/sark/repositories', 'repository definitions' );
     is( $config->{data}->{repositories}->{url},
-        'https://github.com/Sabayon/community-repositories.git', 'repository url' );
+        'https://github.com/Sabayon/community-repositories.git',
+        'repository url'
+    );
 };
 
 done_testing;
-
 

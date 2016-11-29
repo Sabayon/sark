@@ -1,4 +1,5 @@
 package Sark::Engine;
+
 # ABSTRACT: ase class for Sark implementations
 
 use Sark;
@@ -14,8 +15,9 @@ The C<prepare> method is called before the build is started and should be used t
 This method should also be used to clear any caches if a clean build is requested.
 
 =cut
+
 sub prepare {
-    my $sark = Sark->new();
+    my $sark   = Sark->new();
     my $logger = Log::Log4perl->get_logger('Sark::Engine');
     $logger->warn("Prepare method not implemented by engine");
 }
@@ -25,8 +27,9 @@ sub prepare {
 The C<pre-clean> method is called to do any necessary cleanup before the compile phase begins, such as removing unwanted packages
 
 =cut
+
 sub pre_clean {
-    my $sark = Sark->new();
+    my $sark   = Sark->new();
     my $logger = Log::Log4perl->get_logger('Sark::Engine');
     $logger->warn("Pre_clean method not implemented by engine");
 }
@@ -38,8 +41,9 @@ The C<compile> method is called to build the package artifacts, using e.g. porta
 This method requires that all new packages are cached in the repository artifacts directory, and must leave the local copy of the repository in a state ready for publishing when it completes.
 
 =cut
+
 sub compile {
-    my $sark = Sark->new();
+    my $sark   = Sark->new();
     my $logger = Log::Log4perl->get_logger('Sark::Engine');
     $logger->warn("Compile method not implemented by engine");
 }
@@ -49,8 +53,9 @@ sub compile {
 The C<publish> method is called to update the repository with new packages.
 
 =cut
+
 sub publish {
-    my $sark = Sark->new();
+    my $sark   = Sark->new();
     my $logger = Log::Log4perl->get_logger('Sark::Engine');
     $logger->warn("Publish method not implemented by engine");
 }
@@ -60,12 +65,12 @@ sub publish {
 This C<post-clean> method is called after the publish phase and can be used to do any necessary cleanup, such as removing old package versions.
 
 =cut
+
 sub post_clean {
-    my $sark = Sark->new();
+    my $sark   = Sark->new();
     my $logger = Log::Log4perl->get_logger('Sark::Engine');
     $logger->warn("Post_clean method not implemented by engine");
 }
-
 
 1;
 

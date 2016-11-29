@@ -12,14 +12,12 @@ sub usage_text {
 }
 
 sub run {
-    my ($opts, @args) = @_;
+    my ( $opts, @args ) = @_;
     my $sark = Sark->new;
-    
+
     my @repos = Sark::Repo::list();
-    
-    return {
-        lines => \@repos,
-    };
+
+    return { lines => \@repos, };
 }
 
 1;

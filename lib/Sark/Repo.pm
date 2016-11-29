@@ -29,21 +29,25 @@ Returns a list of all available repository names
 
 sub list {
     my $class = shift;
-    my $sark = Sark->new();
-    
+    my $sark  = Sark->new();
+
     my $logger = Log::Log4perl->get_logger('Sark::Repo');
 
     my $repo_dir = $sark->{config}->{data}->{repositories}->{definitions};
-    if (-d $repo_dir) {
-        opendir(my $dh, $repo_dir) or die "Cannot open repositories directory: $!";
-        my @repos = grep { ! /^\./ && -d "$repo_dir/$_" } readdir($dh);
+    if ( -d $repo_dir ) {
+        opendir( my $dh, $repo_dir )
+            or die "Cannot open repositories directory: $!";
+        my @repos = grep { !/^\./ && -d "$repo_dir/$_" } readdir($dh);
         closedir $dh;
-        
+
         return sort(@repos);
-    } else {
-        $logger->error("Failed to list repositories: no such file or directory: $repo_dir");
     }
-    
+    else {
+        $logger->error(
+            "Failed to list repositories: no such file or directory: $repo_dir"
+        );
+    }
+
 }
 
 =method enabled
