@@ -90,6 +90,7 @@ sub initialize {
             docker => {
                 type     => '//rec',
                 optional => {
+                    connection    => '//str',
                     commit_images => '/sark/bool',
                     push_images   => '/sark/bool',
                     capabilities  => {
@@ -239,6 +240,7 @@ build:
     - Docker
   plugins: []
 docker:
+  connection: "unix:///var/run/docker.sock"
   commit_images: true
   push_images: true
   capabilities:
@@ -437,6 +439,15 @@ The following settings apply only when using the docker backend for Sark
 builds and control how docker is used globally.
 
 =over 2
+
+=item C<connection>
+
+The socket or server/port to use when connecting to the docker daemon
+
+Defaults to "unix:///var/run/docker.sock".
+
+See [https://docs.docker.com/engine/reference/commandline/dockerd/#/daemon-socket-option](Docker daemon socket option)
+for more information on alternate options for this setting.
 
 =item C<commit_images>
 
