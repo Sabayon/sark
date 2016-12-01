@@ -11,7 +11,7 @@ use Log::Log4perl;
 
 use Sark::Config;
 use Sark::Loader;
-use Sark::Utils qw(uniq);
+use Sark::Utils qw(bool uniq);
 
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
@@ -196,24 +196,6 @@ sub loaded {
         return 1 if ( $plugin_loaded eq $Plugin );
     }
     return 0;
-}
-
-sub bool {
-    my $value = shift // 0;
-
-    if ( $value == 1 ) {
-        return 1;
-    }
-    elsif ( $value == 0 ) {
-        return 0;
-    }
-    elsif ( $value =~ /^(?:y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|)$/ ) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-
 }
 
 *instance = \&new;
