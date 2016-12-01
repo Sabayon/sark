@@ -5,9 +5,10 @@ package Sark::Utils;
 use base qw(Exporter);
 our @EXPORT_OK = qw(bool uniq);
 
-=func uniq( $arr )
+=func uniq( $value, ... )
 
-Takes in a list and returns a copy with all duplicate elements removed.
+Returns a copy of the arguments with all duplicates removed.
+Order is undefined, sort the output if you need predictable ordering.
 
 =cut
 
@@ -28,10 +29,7 @@ sub bool {
     if ( $value == 1 ) {
         return 1;
     }
-    elsif ( $value == 0 ) {
-        return 0;
-    }
-    elsif ( $value =~ /^(?:y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|)$/ ) {
+    elsif ( $value =~ /^(y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON)$/ ) {
         return 1;
     }
     else {
