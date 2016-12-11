@@ -4,5 +4,9 @@
 *.bak
 *.kate-swp
 
+# Builds
+/Sark-*/
+/Sark-*.tar.gz
+
 # Project workspaces
 *.kdev4
