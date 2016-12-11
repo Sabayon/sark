@@ -17,8 +17,10 @@ repositories:
   definitions: "/tmp/sark/repositories"
 END
 
-    lives_ok { $config->validate($good_document) }
-    'good document validates against config schema';
+    lives_ok(
+        sub { $config->validate($good_document) },
+        'good document validates against config schema'
+    );
 };
 
 subtest "default merging" => sub {
@@ -36,8 +38,10 @@ END
 
     # Check the merged document passes the schema validation
     my $config = Sark::Config->new;
-    lives_ok { $config->validate($good_document) }
-    'merged document validates against config schema';
+    lives_ok(
+        sub { $config->validate($good_document) },
+        'merged document validates against config schema'
+    );
 };
 
 subtest "environment overrides" => sub {

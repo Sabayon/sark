@@ -26,13 +26,16 @@ build:
     - app-misc/foo
 END
 
-    lives_ok { $spec->validate($good_document) }
-    'good document validates against sparse spec';
-    throws_ok { $spec->validate($no_repo_description) }
-    'Data::Rx::FailureSet', 'no repository description throws error';
+    lives_ok(
+        sub { $spec->validate($good_document) },
+        'good document validates against sparse spec'
+    );
+    throws_ok( sub { $spec->validate($no_repo_description) },
+        'Data::Rx::FailureSet', 'no repository description throws error' );
 
-    throws_ok { $spec->validate( $good_document, 0 ) } 'Data::Rx::FailureSet',
-        'good document (sparse) fails against dense spec';
+    throws_ok( sub { $spec->validate( $good_document, 0 ) },
+        'Data::Rx::FailureSet',
+        'good document (sparse) fails against dense spec' );
 };
 
 subtest "sparse-dense spec conversion" => sub {
@@ -68,8 +71,10 @@ subtest "default merging" => sub {
 
     # Check the merged document passes the dense spec validation
     my $spec = Sark::Specification->new;
-    lives_ok { $spec->validate( $dense_spec, 0 ) }
-    'merged document validates against dense spec';
+    lives_ok(
+        sub { $spec->validate( $dense_spec, 0 ) },
+        'merged document validates against dense spec'
+    );
 };
 
 subtest "environment overrides" => sub {
