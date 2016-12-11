@@ -21,11 +21,9 @@ sub validate {
 }
 
 sub run {
-    my ( $opts, @args ) = @_;
+    my ( $self, $opts, @args ) = @_;
 
-    my $sark   = Sark->new();
-    my $logger = Log::Log4perl->get_logger('Sark::Command::Repo::Enable');
-    $logger->error("repo enable not implemented yet");
+    Sark::Repo->enable_repos( \@args );
 }
 
 1;
