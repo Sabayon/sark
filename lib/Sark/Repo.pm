@@ -5,6 +5,8 @@ package Sark::Repo;
 use warnings;
 use strict;
 
+use Array::Utils qw(array_minus);
+
 use Sark;
 
 =method sync
@@ -57,10 +59,13 @@ Returns a list of all enabled repository names
 =cut
 
 sub enabled {
-    my $class = shift;
+    my $self = shift;
 
-    my $sark = Sark->new();
+    my @all_repos      = $self->list;
+    my @disabled_repos = $self->disabled;
+    my @enabled_repos  = array_minus( @all_repos, @disabled_repos );
 
+    return @enabled_repos;
 }
 
 =method disabled
@@ -70,10 +75,135 @@ Returns a list of all disabled repository names
 =cut
 
 sub disabled {
-    my $class = shift;
+    my $self = shift;
 
     my $sark = Sark->new();
 
+    return sort( @{ $sark->{state}->{data}->{disabled_repositories} } );
+}
+
+=method enable_repos( @repos, $persist=1 )
+
+Enables the given repositories by name, suitable for bulk operations.
+
+This method will remove the named repositories from the disabled repositories
+state file, and if the persist option is set, will trigger a save of
+the state file.
+
+=cut
+
+sub enable_repos {
+    my $self      = shift;
+    my $repo_list = shift;
+    my @repos     = @{$repo_list};
+    my $persist   = shift // 1;
+
+    my $sark   = Sark->new();
+    my $logger = Log::Log4perl->get_logger('Sark::Repo::enable_repos');
+
+    # Optimise, grab the list of all repos up front
+    my %all_repos = map { $_ => 1 } Sark::Repo->list;
+
+    # Mark which ones are disabled to start with
+    for ( Sark::Repo->disabled ) {
+        $all_repos{$_} = 0;
+    }
+
+    # Maintain a count of changes made, to see if we need to flush the state
+    # file back to disk.
+    my $changes = 0;
+
+    for my $repo (@repos) {
+        unless ( defined( $all_repos{$repo} ) ) {
+            $logger->warn("Unknown repository '$repo'");
+            next;
+        }
+
+        if ( $all_repos{$repo} ) {
+            $logger->warn("Repository '$repo' is already enabled");
+            next;
+        }
+
+        # Mark the repository as enabled locally
+        $logger->info("Enabling repository '$repo'");
+        $all_repos{$repo} = 1;
+        ++$changes;
+    }
+
+    if ($changes) {
+
+        # Flush the changes back to the disabled repos list
+        $sark->{state}->{data}->{disabled_repositories} =
+            [ sort( grep { $all_repos{$_} == 0 } keys(%all_repos) ) ];
+
+        if ($persist) {
+
+            # Write the save file back out to disk
+            $sark->{state}->save;
+        }
+    }
+}
+
+=method disable_repos( @repos, $persist=1 )
+
+Disables the given repositories by name, suitable for bulk operations.
+
+This method will add the named repositories to the disabled repositories
+state file, and if the persist option is set, will trigger a save of
+the state file.
+
+=cut
+
+sub disable_repos {
+    my $self      = shift;
+    my $repo_list = shift;
+    my @repos     = @{$repo_list};
+    my $persist   = shift // 1;
+
+    my $sark   = Sark->new();
+    my $logger = Log::Log4perl->get_logger('Sark::Repo::disable_repos');
+
+    # Optimise, grab the list of all repos up front
+    my %all_repos = map { $_ => 1 } Sark::Repo->list;
+
+    # Mark which ones are disabled to start with
+    for ( Sark::Repo->disabled ) {
+        $all_repos{$_} = 0;
+    }
+
+    # Maintain a count of changes made, to see if we need to flush the state
+    # file back to disk.
+    my $changes = 0;
+
+    for my $repo (@repos) {
+        unless ( defined( $all_repos{$repo} ) ) {
+            $logger->warn("Unknown repository '$repo'");
+            next;
+        }
+
+        if ( !$all_repos{$repo} ) {
+            $logger->warn("Repository '$repo' is already disabled");
+            next;
+        }
+
+        # Mark the repository as disabled locally
+        $logger->info("Disabling repository '$repo'");
+        $all_repos{$repo} = 0;
+        ++$changes;
+    }
+
+    if ($changes) {
+
+        # Flush the changes back to the disabled repos list
+        $sark->{state}->{data}->{disabled_repositories} =
+            [ sort( grep { $all_repos{$_} == 0 } keys(%all_repos) ) ];
+
+        if ($persist) {
+
+            # Write the save file back out to disk
+            $sark->{state}->save;
+        }
+    }
 }
 
 =method new( $name, $sparse )
