@@ -101,6 +101,8 @@ options.
 sub init {
     my ( $self, $opts ) = @_;
 
+    $self->{opts} = $opts;
+
     # This will be the first time Sark is accessed
     # so pass in the configuration options to initialize it
     my $sark = Sark->new(
@@ -127,9 +129,14 @@ sub render {
     my ( $self, $output ) = @_;
 
     if ( ref($output) eq "HASH" ) {
-        print join( "\n", @{ $output->{lines} } ), "\n";
+        if ( defined( $output->{lines} ) ) {
+            print join( "\n", @{ $output->{lines} } ), "\n";
+        }
+        else {
+            print "Success\n" if $output->{success} && !$self->{opts}->quiet;
+        }
     }
-    else {
+    elsif ($output) {
         die $output;
     }
 }
