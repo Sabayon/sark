@@ -29,7 +29,10 @@ sub option_spec {
         [   'config|c=s' => 'config file',
             { default => "$ENV{HOME}/sark/config.yaml", }
         ],
-        [   'logging_config|l=s' => 'logging config file',
+        [   'state-file|s=s' => 'state file',
+            { default => "$ENV{HOME}/sark/state.yaml", }
+        ],
+        [   'logging-config|l=s' => 'logging config file',
             { default => "$ENV{HOME}/sark/logging.conf", }
         ],
     );
@@ -61,6 +64,8 @@ OPTIONS
     -d --debug      : show debug output
     -c --config=$HOME/sark/config.yaml
                     : path to the sark configuration file
+    -s --state-file=$HOME/sark/state.yaml
+                    : path to the sark state file
     -l --logging_config=$HOME/sark/logging.conf
                     : path to the sark logging config file
     
@@ -100,6 +105,7 @@ sub init {
     # so pass in the configuration options to initialize it
     my $sark = Sark->new(
         {   CONFIG_FILE         => $opts->{config},
+            STATE_FILE          => $opts->{state_file},
             LOGGING_CONFIG_FILE => $opts->{logging_config},
             LOG_QUIET           => $opts->{quiet},
             LOG_VERBOSE         => $opts->{verbose},

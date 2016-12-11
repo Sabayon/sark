@@ -12,6 +12,7 @@ use Log::Log4perl;
 use Sark::Config;
 use Sark::Loader;
 use Sark::Utils qw(bool uniq);
+use Sark::State;
 
 BEGIN {
     # Force Locale::TextDomain to encode in UTF-8 and to decode all messages.
@@ -54,6 +55,7 @@ sub init {
     my $self = shift;
 
     $self->{CONFIG_FILE}         //= "$ENV{HOME}/sark/config.yaml";
+    $self->{STATE_FILE}          //= "$ENV{HOME}/sark/state.yaml";
     $self->{LOGGING_CONFIG_FILE} //= "$ENV{HOME}/sark/logging.conf";
     $self->{LOG_QUIET}           //= 0;
     $self->{LOG_VERBOSE}         //= 0;
@@ -113,6 +115,9 @@ END
 
     $self->{config} = Sark::Config->new;
     $self->{config}->load_from_config_file( $self->{CONFIG_FILE} );
+
+    $self->{state} = Sark::State->new( $self->{STATE_FILE} );
+    $self->{state}->load;
 
     $self->_register_namespace(
         "Sark::Engine",
