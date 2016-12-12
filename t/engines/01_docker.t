@@ -1,4 +1,3 @@
-
 #!/usr/bin/env perl
 use lib './t/lib';
 use warnings FATAL => 'all';
