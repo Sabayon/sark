@@ -9,7 +9,7 @@ my $api;
 my $checkv;
 eval {
     $api    = Sark::API::Interface::Docker->new();
-    $checkv = $api->version();
+    $checkv = $api->version()->{Version};
 };
 
 if ( !$api or $@ or !$checkv ) {
