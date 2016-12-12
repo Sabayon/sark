@@ -32,11 +32,16 @@ sub uri {
 sub _parse {
     my ( $self, $uri, %options ) = @_;
     my $res = $self->ua->get( $self->_uri( $uri, %options ) );
-    if ( $res->content_type eq 'application/json' ) {
-        return decode_json( $res->decoded_content );
+    if ( $res->is_success ) {
+        if ( $res->content_type eq 'application/json' ) {
+            return decode_json( $res->decoded_content );
+        }
+        elsif ( $res->content_type eq 'text/plain' ) {
+            return eval { decode_json( $res->decoded_content ) };
+        }
     }
-    elsif ( $res->content_type eq 'text/plain' ) {
-        return eval { decode_json( $res->decoded_content ) };
+    else {
+        return $res;
     }
     $res->dump;
 }
@@ -92,9 +97,9 @@ Returns the running containers. You can specify the options as an hash, followin
 
 =cut
 
-sub ps {
+sub containers {
     my ( $self, %options ) = @_;
-    return $self->_parse( '/containers/ps', %options );
+    return $self->_parse( '/containers/json', %options );
 }
 
 =method images
