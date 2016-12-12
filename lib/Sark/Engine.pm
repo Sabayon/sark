@@ -8,6 +8,47 @@ has [qw( name )];
 
 use Log::Log4perl;
 
+=method register
+
+The C<register> method binds building events emitted by Sark::Build to specific methods of the loaded Engine.
+
+=cut
+
+sub register {
+    my ( $self, $sark ) = @_;
+    $sark->emit("engine.docker.register");
+    $sark->on(
+        "build.prepare" => sub {
+            $sark->emit( "engine.docker.build.prepare", $self, @_ );
+            $self->prepare( $_[0] );
+        }
+    );
+    $sark->on(
+        "build.pre_clean" => sub {
+            $sark->emit( "engine.docker.build.pre_clean", $self, @_ );
+            $self->pre_clean( $_[0] );
+        }
+    );
+    $sark->on(
+        "build.compile" => sub {
+            $sark->emit( "engine.docker.build.compile", $self, @_ );
+            $self->compile( $_[0] );
+        }
+    );
+    $sark->on(
+        "build.publish" => sub {
+            $sark->emit( "engine.docker.build.publish", $self, @_ );
+            $self->publish( $_[0] );
+        }
+    );
+    $sark->on(
+        "build.post_clean" => sub {
+            $sark->emit( "engine.docker.build.post_clean", $self, @_ );
+            $self->post_clean( $_[0] );
+        }
+    );
+}
+
 =method prepare
 
 The C<prepare> method is called before the build is started and should be used to acquire any resources necessary to run the build, for example container disk images.
