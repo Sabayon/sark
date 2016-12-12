@@ -5,7 +5,7 @@ use strict;
 use Helpers;
 use Test::More;
 use Sark;
-use Sark::Utils qw(bool uniq);
+use Sark::Utils qw(array_minus bool uniq);
 
 subtest "uniq" => sub {
     is_deeply( [ uniq() ],          [],  'Empty list' );
@@ -63,5 +63,14 @@ subtest "bool" => sub {
 
 };
 
-done_testing;
+subtest "array_minus" => sub {
+    my @a = qw( a b c d );
+    my @b = qw( c d e f );
 
+    my @minus = array_minus( @a, @b );
+    is( scalar( @minus ), 2, "Array minus count" );
+    is_deeply(\@minus, [qw( a b )] , "Array minus" );
+
+};
+
+done_testing;

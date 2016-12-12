@@ -3,7 +3,7 @@ package Sark::Utils;
 # ABSTRACT: Utility functions
 
 use base qw(Exporter);
-our @EXPORT_OK = qw(bool uniq);
+our @EXPORT_OK = qw(array_minus bool uniq);
 
 =func uniq( $value, ... )
 
@@ -36,6 +36,22 @@ sub bool {
         return 0;
     }
 
+}
+
+
+=item C<array_minus>
+
+Returns the difference of the passed arrays A and B (only those
+array elements that exist in A and do not exist in B).
+If an empty array is returned, A is subset of B.
+
+Function was proposed by Laszlo Forro <salmonix@gmail.com>.
+
+=cut
+
+sub array_minus(\@\@) {
+	my %e = map{ $_ => undef } @{$_[1]};
+	return grep( ! exists( $e{$_} ), @{$_[0]} );
 }
 
 1;

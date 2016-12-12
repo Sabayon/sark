@@ -5,7 +5,7 @@ package Sark::Repo;
 use warnings;
 use strict;
 
-use Array::Utils qw(array_minus);
+use Sark::Utils qw(array_minus);
 
 use Sark;
 
@@ -23,7 +23,7 @@ sub sync {
 
 }
 
-=method list 
+=method list
 
 Returns a list of all available repository names
 
