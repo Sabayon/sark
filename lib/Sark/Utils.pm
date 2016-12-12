@@ -38,7 +38,6 @@ sub bool {
 
 }
 
-
 =item C<array_minus>
 
 Returns the difference of the passed arrays A and B (only those
@@ -50,8 +49,8 @@ Function was proposed by Laszlo Forro <salmonix@gmail.com>.
 =cut
 
 sub array_minus(\@\@) {
-	my %e = map{ $_ => undef } @{$_[1]};
-	return grep( ! exists( $e{$_} ), @{$_[0]} );
+    my %e = map { $_ => undef } @{ $_[1] };
+    return grep( !exists( $e{$_} ), @{ $_[0] } );
 }
 
 1;

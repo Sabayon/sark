@@ -68,8 +68,8 @@ subtest "array_minus" => sub {
     my @b = qw( c d e f );
 
     my @minus = array_minus( @a, @b );
-    is( scalar( @minus ), 2, "Array minus count" );
-    is_deeply(\@minus, [qw( a b )] , "Array minus" );
+    is( scalar(@minus), 2, "Array minus count" );
+    is_deeply( \@minus, [qw( a b )], "Array minus" );
 
 };
 
