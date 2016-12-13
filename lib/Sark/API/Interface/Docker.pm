@@ -38,6 +38,9 @@ sub _parse {
         elsif ( $res->content_type eq 'text/plain' ) {
             return eval { decode_json( $res->decoded_content ) };
         }
+        elsif ( $res->content_type eq 'application/octet-stream' ) {
+            return $res->content;
+        }
     }
     else {
         return $res;
@@ -88,6 +91,30 @@ sub create {
     my $json = JSON::XS->new;
     my $out  = $json->incr_parse( $res->decoded_content );
     return $out->{Id};
+}
+
+=method commit
+
+Commits a container. You can specify the options as an hash, following the Docker API specifications.
+
+=cut
+
+sub commit {
+    my ( $self, %options ) = @_;
+
+    my $res = $self->ua->post(
+        $self->_uri( '/commit', %options ),
+        'Content-Type' => 'application/json'
+    );
+
+    my $json = JSON::XS->new;
+    my $out  = $json->incr_parse( $res->decoded_content );
+    if ( $res->is_success ) {
+        return $out->{Id};
+    }
+
+    return $res;
+
 }
 
 =method ps
@@ -144,7 +171,19 @@ sub inspect_container {
 
 sub export {
     my ( $self, $name, %options ) = @_;
-    return $self->_parse( '/containers/' . $name . '/export', %options );
+    my $destination;
+    if ( $options{destination} ) {
+        $destination = $options{destination};
+        delete $options{destination};
+    }
+    my $res = $self->_parse( '/containers/' . $name . '/export', %options );
+    if ( defined $destination ) {
+        open( my $out, '>:raw', $destination ) or croak "Unable to open: $!";
+        print $out $res;
+        close($out);
+        return ( -e $destination ) ? 1 : 0;
+    }
+    return $res;
 }
 
 sub diff {
