@@ -186,11 +186,6 @@ sub export {
     return $res;
 }
 
-sub diff {
-    my ( $self, $name, %options ) = @_;
-    return $self->_parse( '/containers/' . $name . '/changes', %options );
-}
-
 sub remove_image {
     my ( $self, @names ) = @_;
     for my $image (@names) {
