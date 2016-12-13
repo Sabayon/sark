@@ -4,6 +4,7 @@ use warnings FATAL => 'all';
 use strict;
 use Test::More;
 use Sark::API::Interface::Docker;
+use Test::TempDir::Tiny;
 
 my $api;
 my $checkv;
@@ -99,6 +100,36 @@ subtest 'Sark::API::Interface::Docker container tests' => sub {
 
             is( $running->{Id}, $id, "Found running container $id" );
             $api->stop( $running->{Id} );
+
+            # Check if retrieving logs works.
+            my $logs = $api->logs($id);
+            ok( length($logs) > 3, "Retrieving container $id logs" );
+            like( $logs, qr/\/\s+\#/,
+                "Retrieving from container $id logs to prove shell was successfully started."
+            );
+
+            my $new_id = $api->commit(
+                container => $id,
+                repo      => "busybox",
+                tag       => "latest"
+            );
+            ok( defined $new_id, "Commit container" );
+            like( $new_id, qr/sha.*\:/,
+                "Commit container returned a sha* id" );
+
+            # Check if export() works
+            my $temp = tempdir();    # ./tmp/t_foo_t/default_1/
+            my $tempExport = join( "/", $temp, "export.tar" );
+            my $result = $api->export( $id, destination => $tempExport );
+            ok( $result, "Container exported on file successfully" );
+            ok( -e $tempExport,
+                "Container exported on file successfully in the specified folder"
+            );
+            my $content = $api->export($id);
+            ok( grep( /www\-data/, $content ),
+                "Container exported on memory successfully" );
+
+            # Check if retrieve changes works
             my $curr_container_status =
                 $api->inspect_container( $running->{Id} );
             is( $curr_container_status->{State}->{Status},
@@ -130,6 +161,18 @@ subtest 'Sark::API::Interface::Docker image tests' => sub {
         qr/Pulling from .*/,
         "Pulled $testimg docker image"
     );
+
+    # Checks if image history exists.
+    my $history = $api->history($testimg);
+    ok( scalar( @{$history} ) > 1,
+        "History fetched, and there is more than one layer" );
+    foreach my $l ( @{$history} ) {
+        ok( exists $l->{Id},        "Layer has Id field" );
+        ok( exists $l->{Tags},      "Layer has Tags field" );
+        ok( exists $l->{Created},   "Layer has Created field" );
+        ok( exists $l->{CreatedBy}, "Layer has CreatedBy field" );
+        ok( exists $l->{Size},      "Layer has Size field" );
+    }
 
     my $inspect = $api->inspect($testimg);
     ok( exists $inspect->{Id},       "Check if image has Id" );
