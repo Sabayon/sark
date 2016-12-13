@@ -17,12 +17,11 @@ has "ua" => sub {
             http => 'LWP::Protocol::http::SocketUnixAlt' );
     }
     my $ua = LWP::UserAgent->new;
+    $ua->agent('Mozilla/5.0');
     return $ua;
 };
 
-sub _uri { my $self = shift; return $self->uri(@_); }
-
-sub uri {
+sub _uri {
     my ( $self, $rel, %options ) = @_;
     my $uri = URI->new( $self->address . $rel );
     $uri->query_form(%options);
@@ -81,7 +80,7 @@ sub create {
     my $input = encode_json( \%options );
 
     my $res = $self->ua->post(
-        $self->uri( '/containers/create', %query ),
+        $self->_uri( '/containers/create', %query ),
         'Content-Type' => 'application/json',
         Content        => $input
     );
@@ -223,6 +222,8 @@ sub logs {
     my $res = $self->ua->post( $url, \%params );
     return $res->content;
 }
+
+*uri = \&_uri;
 
 1;
 
