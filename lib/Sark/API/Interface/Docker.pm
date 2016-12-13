@@ -112,11 +112,6 @@ sub images {
     return $self->_parse( '/images/json', %options );
 }
 
-sub images_viz {
-    my ( $self, %options ) = @_;
-    return $self->_parse( '/images/viz', %options );
-}
-
 sub search {
     my ( $self, %options ) = @_;
     return $self->_parse( '/images/search', %options );
