@@ -4,7 +4,7 @@ package Sark::Engine;
 
 use Sark;
 use Deeme::Obj -base;
-has [qw( name )];
+has [qw( name interface)];
 
 use Log::Log4perl;
 
