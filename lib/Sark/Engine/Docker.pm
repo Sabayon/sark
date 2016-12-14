@@ -3,8 +3,12 @@ use Deeme::Obj 'Sark::Engine';
 use Sark;
 use Sark::API::Interface::Docker;
 
-has "name" => "Docker";
-has "interface" => sub { return Sark::API::Interface::Docker->new };
+has "name"      => "Docker";
+has "logger"    => sub { Log::Log4perl->get_logger('Sark::Engine::Docker'); };
+has "interface" => sub {
+    Sark::API::Interface::Docker->new(
+        Sark->instance->{config}->{docker}->{connection} );
+};
 
 sub prepare {
 

@@ -172,7 +172,7 @@ It will:
 =item Store the result in this config object
 
 =back
-  
+
 =cut
 
 sub parse_config {
@@ -240,7 +240,7 @@ build:
     - Docker
   plugins: []
 docker:
-  connection: "unix:///var/run/docker.sock"
+  connection: "http:/var/run/docker.sock/"
   commit_images: true
   push_images: true
   capabilities:
@@ -270,7 +270,7 @@ END
 =func override_from_environment( $config )
 
 Updates the given configuration with any overrides specified by
-environment variables. 
+environment variables.
 
 =cut
 
