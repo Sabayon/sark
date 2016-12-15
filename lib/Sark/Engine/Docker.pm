@@ -7,7 +7,7 @@ has "name"      => "Docker";
 has "logger"    => sub { Log::Log4perl->get_logger('Sark::Engine::Docker'); };
 has "interface" => sub {
     Sark::API::Interface::Docker->new(
-        Sark->instance->{config}->{docker}->{connection} );
+        Sark->instance->{config}->{data}->{docker}->{connection} );
 };
 
 sub prepare {
