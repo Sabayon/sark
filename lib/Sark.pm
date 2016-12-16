@@ -181,6 +181,7 @@ sub _register_module {
 # Register a plugin/engine
 sub load_plugin {
     my ( $self, $Plugin ) = @_;
+    return $self unless !$self->loaded($Plugin);
     $self->plugin( [ @{ $self->plugin() }, ucfirst($Plugin) ] )
         unless !$self->_register_module("Sark::Plugin::${Plugin}");
     return $self;
@@ -188,6 +189,7 @@ sub load_plugin {
 
 sub load_engine {
     my ( $self, $Plugin ) = @_;
+    return $self unless !$self->loaded($Plugin);
     $self->engine( [ @{ $self->engine() }, ucfirst($Plugin) ] )
         unless !$self->_register_module("Sark::Engine::${Plugin}");
     return $self;
