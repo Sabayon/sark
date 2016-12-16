@@ -2,6 +2,7 @@ package Sark::Engine::Docker;
 use Deeme::Obj 'Sark::Engine';
 use Sark;
 use Sark::API::Interface::Docker;
+use Log::Log4perl;
 
 has "name"      => "Docker";
 has "logger"    => sub { Log::Log4perl->get_logger('Sark::Engine::Docker'); };
