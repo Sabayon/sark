@@ -61,19 +61,18 @@ Search the key in the hash returning the data structure inside it.
 
 sub hash_getkey {
     my ( $hash, $string ) = @_;
-    if ( ref($hash) eq "HASH" ) {
-        foreach my $k ( keys %{$hash} ) {
-            return $hash->{$k} if $k eq $string;
+    return unless ref($hash) ne "ARRAY";
+    return unless ref($hash) eq "HASH";
 
-            if ( my $res = hash_getkey( $hash->{$k}, $string ) ) {
-                return $res;
-            }
+    foreach my $k ( keys %{$hash} ) {
+        return $hash->{$k} if $k eq $string;
 
+        if ( my $res = hash_getkey( $hash->{$k}, $string ) ) {
+            return $res;
         }
+
     }
-    elsif ( ref($hash) eq "ARRAY" ) {
-        return;
-    }
+
 }
 
 1;

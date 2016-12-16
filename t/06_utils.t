@@ -76,14 +76,22 @@ subtest "array_minus" => sub {
 subtest "hash_getkey" => sub {
     my $a = {
         data => { foo => "bar" },
-        baz  => { bar => "baz" }
+        baz  => { bar => "baz" },
+        ba   => {
+            bo   => { test_array => [ 1, 2, 3 ] },
+            void => { empty      => "null" }
+        }
     };
 
-    my $baz = hash_getkey( $a, "bar" );
-    my $bar = hash_getkey( $a, "foo" );
+    my $baz   = hash_getkey( $a, "bar" );
+    my $bar   = hash_getkey( $a, "foo" );
+    my $array = hash_getkey( $a, "test_array" );
+    my $null  = hash_getkey( $a, "empty" );
 
-    ok( $baz eq "baz", "baz found inside baz->bar" );
-    ok( $bar eq "bar", "bar found inside data->foo" );
+    ok( $baz eq "baz",   "baz found inside baz->bar" );
+    ok( $bar eq "bar",   "bar found inside data->foo" );
+    ok( $null eq "null", "null found inside ba->bo->void" );
+    is_deeply( $array, [ 1, 2, 3 ], "found test_array" );
 
 };
 
