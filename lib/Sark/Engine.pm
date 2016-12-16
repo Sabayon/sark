@@ -20,42 +20,62 @@ sub register {
     $sark->emit( join( ".", "engine", $self->name, "register" ) );
     $sark->on(
         "build.prepare" => sub {
+
+# First make sure engine has been explictly selected inside the build configuration.
+# This avoids that all loaded engines are enabled for all builds(allowing parallel execution)
+            return
+                unless ( $_[1]->has_engine( $self->name ) )
+                ;    #$_[1] is the Sark::Build in this case
+
+            my $class = shift;
             $sark->emit(
                 join( ".", "engine", $self->name, "build", "prepare" ),
                 $self, @_ );
-            $self->prepare( $_[0] );
+            $self->prepare(@_);
+
         }
     );
     $sark->on(
         "build.pre_clean" => sub {
+            return unless ( $_[1]->has_engine( $self->name ) );
+
+            my $class = shift;
             $sark->emit(
                 join( ".", "engine", $self->name, "build", "pre_clean" ),
                 $self, @_ );
-            $self->pre_clean( $_[0] );
+            $self->pre_clean(@_);
         }
     );
     $sark->on(
         "build.compile" => sub {
+            return unless ( $_[1]->has_engine( $self->name ) );
+            my $class = shift;
+
             $sark->emit(
                 join( ".", "engine", $self->name, "build", "compile" ),
                 $self, @_ );
-            $self->compile( $_[0] );
+            $self->compile(@_);
         }
     );
     $sark->on(
         "build.publish" => sub {
+            return unless ( $_[1]->has_engine( $self->name ) );
+            my $class = shift;
             $sark->emit(
                 join( ".", "engine", $self->name, "build", "publish" ),
                 $self, @_ );
-            $self->publish( $_[0] );
+            $self->publish(@_);
         }
     );
     $sark->on(
         "build.post_clean" => sub {
+            return unless ( $_[1]->has_engine( $self->name ) );
+            my $class = shift;
+
             $sark->emit(
                 join( ".", "engine", $self->name, "build", "post_clean" ),
                 $self, @_ );
-            $self->post_clean( $_[0] );
+            $self->post_clean(@_);
         }
     );
 }

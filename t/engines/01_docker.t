@@ -13,41 +13,50 @@ subtest "engines" => sub {
 
     Sark->instance->on(
         "engine.Docker.build.prepare" => sub {
+            isa_ok( $_[0], "Sark" );
             isa_ok( $_[1], "Sark::Engine::Docker" );
-            isa_ok( $_[2], "Sark" );
-            isa_ok( $_[3], "Sark::Build" );
+            isa_ok( $_[2], "Sark::Build" );
+            ok( $_[3] eq "prepare", "Sark::Build prepare()" );
         }
     );
 
     Sark->instance->on(
         "engine.Docker.build.pre_clean" => sub {
+            isa_ok( $_[0], "Sark" );
             isa_ok( $_[1], "Sark::Engine::Docker" );
-            isa_ok( $_[2], "Sark" );
-            isa_ok( $_[3], "Sark::Build" );
+            isa_ok( $_[2], "Sark::Build" );
+            ok( $_[3] eq "pre_clean", "Sark::Build pre_clean()" );
+
         }
     );
 
     Sark->instance->on(
         "engine.Docker.build.compile" => sub {
+            isa_ok( $_[0], "Sark" );
             isa_ok( $_[1], "Sark::Engine::Docker" );
-            isa_ok( $_[2], "Sark" );
-            isa_ok( $_[3], "Sark::Build" );
+            isa_ok( $_[2], "Sark::Build" );
+            ok( $_[3] eq "compile", "Sark::Build compile()" );
+
         }
     );
 
     Sark->instance->on(
         "engine.Docker.build.publish" => sub {
+            isa_ok( $_[0], "Sark" );
             isa_ok( $_[1], "Sark::Engine::Docker" );
-            isa_ok( $_[2], "Sark" );
-            isa_ok( $_[3], "Sark::Build" );
+            isa_ok( $_[2], "Sark::Build" );
+            ok( $_[3] eq "publish", "Sark::Build publish()" );
+
         }
     );
 
     Sark->instance->on(
         "engine.Docker.build.post_clean" => sub {
+            isa_ok( $_[0], "Sark" );
             isa_ok( $_[1], "Sark::Engine::Docker" );
-            isa_ok( $_[2], "Sark" );
-            isa_ok( $_[3], "Sark::Build" );
+            isa_ok( $_[2], "Sark::Build" );
+            ok( $_[3] eq "post_clean", "Sark::Build post_clean()" );
+
         }
     );
 
