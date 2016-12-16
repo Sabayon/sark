@@ -32,6 +32,13 @@ subtest "events" => sub {
     $build->compile("compile");
     $build->publish("publish");
     $build->post_clean("post_clean");
+    ok( $build->engines()->[0] eq "Docker",
+        "Default build configuration has Docker engine as default" );
+    ok( $build->has_engine("Docker"),
+        "Default build configuration has Docker engine as default" );
+    ok( !$build->has_plugin("Docker"),
+        "Default build configuration has no 'Docker' plugin" );
+
 };
 
 done_testing;
