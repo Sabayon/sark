@@ -74,6 +74,11 @@ END
 
     $config->parse_config($good_document);
 
+    my $definitions = $config->search("definitions");
+    ok( $definitions eq "/tmp/sark/repositories",
+        "use search() to find repositories->definitions"
+    );
+
     is( $config->{data}->{repositories}->{definitions},
         '/tmp/sark/repositories', 'repository definitions' );
     is( $config->{data}->{repositories}->{url},
@@ -83,4 +88,3 @@ END
 };
 
 done_testing;
-

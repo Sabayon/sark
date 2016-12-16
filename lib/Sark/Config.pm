@@ -10,6 +10,7 @@ use Data::Rx;
 use Sark::RxType::Boolean;
 use Sark::RxType::Repository;
 use Hash::Merge qw( merge );
+use Sark::Utils qw( hash_getkey );
 use YAML::Tiny;
 
 my @EXPORT_OK =
@@ -214,6 +215,17 @@ sub load_from_config_file {
     }
 
     $self->parse_config($contents);
+}
+
+=method search( $string, ... )
+
+Search the given key in the configuration and returns the data structure/value contained in the configfile.
+
+=cut
+
+sub search {
+    my $self = shift;
+    return hash_getkey( $self->{data}, @_ );
 }
 
 =func _add_missing_defaults( $config )

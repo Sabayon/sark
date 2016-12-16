@@ -5,7 +5,7 @@ use strict;
 use Helpers;
 use Test::More;
 use Sark;
-use Sark::Utils qw(array_minus bool uniq);
+use Sark::Utils qw(array_minus bool hash_getkey uniq);
 
 subtest "uniq" => sub {
     is_deeply( [ uniq() ],          [],  'Empty list' );
@@ -70,6 +70,20 @@ subtest "array_minus" => sub {
     my @minus = array_minus( @a, @b );
     is( scalar(@minus), 2, "Array minus count" );
     is_deeply( \@minus, [qw( a b )], "Array minus" );
+
+};
+
+subtest "hash_getkey" => sub {
+    my $a = {
+        data => { foo => "bar" },
+        baz  => { bar => "baz" }
+    };
+
+    my $baz = hash_getkey( $a, "bar" );
+    my $bar = hash_getkey( $a, "foo" );
+
+    ok( $baz eq "baz", "baz found inside baz->bar" );
+    ok( $bar eq "bar", "bar found inside data->foo" );
 
 };
 

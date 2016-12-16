@@ -3,7 +3,7 @@ package Sark::Utils;
 # ABSTRACT: Utility functions
 
 use base qw(Exporter);
-our @EXPORT_OK = qw(array_minus bool uniq);
+our @EXPORT_OK = qw(array_minus bool hash_getkey uniq);
 
 =func uniq( $value, ... )
 
@@ -16,7 +16,7 @@ sub uniq {
     return keys %{ { map { $_ => 1 } @_ } };
 }
 
-=func bool( $value)
+=func bool( $value )
 
 Takes a YAML-compatible boolean value and returns 1 for any of the recognised
 true values, and 0 for everything else.
@@ -51,6 +51,29 @@ Function was proposed by Laszlo Forro <salmonix@gmail.com>.
 sub array_minus(\@\@) {
     my %e = map { $_ => undef } @{ $_[1] };
     return grep( !exists( $e{$_} ), @{ $_[0] } );
+}
+
+=func hash_getkey( $hashref, $key )
+
+Search the key in the hash returning the data structure inside it.
+
+=cut
+
+sub hash_getkey {
+    my ( $hash, $string ) = @_;
+    if ( ref($hash) eq "HASH" ) {
+        foreach my $k ( keys %{$hash} ) {
+            return $hash->{$k} if $k eq $string;
+
+            if ( my $res = hash_getkey( $hash->{$k}, $string ) ) {
+                return $res;
+            }
+
+        }
+    }
+    elsif ( ref($hash) eq "ARRAY" ) {
+        return;
+    }
 }
 
 1;
