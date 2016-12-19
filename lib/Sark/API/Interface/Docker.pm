@@ -51,7 +51,7 @@ sub _parse {
 sub _parse_request {
     my ( $self, $res ) = @_;
     if ( $res->content_type eq 'application/json' ) {
-        my $json = JSON::XS->new;
+        my $json = JSON->new;
         return $json->incr_parse( $res->decoded_content );
     }
     my $message = $res->decoded_content;
@@ -88,7 +88,7 @@ sub create {
         Content        => $input
     );
 
-    my $json = JSON::XS->new;
+    my $json = JSON->new;
     my $out  = $json->incr_parse( $res->decoded_content );
     return $out->{Id};
 }
@@ -107,7 +107,7 @@ sub commit {
         'Content-Type' => 'application/json'
     );
 
-    my $json = JSON::XS->new;
+    my $json = JSON->new;
     my $out  = $json->incr_parse( $res->decoded_content );
     if ( $res->is_success ) {
         return $out->{Id};
