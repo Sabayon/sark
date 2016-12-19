@@ -58,6 +58,17 @@ sub register {
         }
     );
     $sark->on(
+        "build.failed" => sub {
+            return unless ( $_[1]->has_engine( $self->name ) );
+            my $class = shift;
+
+            $sark->emit(
+                join( ".", "engine", $self->name, "build", "failed" ),
+                $self, @_ );
+            $self->failed(@_) unless !$self->can("failed");
+        }
+    );
+    $sark->on(
         "build.publish" => sub {
             return unless ( $_[1]->has_engine( $self->name ) );
             my $class = shift;
