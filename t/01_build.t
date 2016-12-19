@@ -9,6 +9,7 @@ use Sark::Build;
 
 # Testing compile and test events
 subtest "events" => sub {
+    use Data::UUID;
     Sark->instance->on( "build.prepare" =>
             sub { is( $_[2], "prepare", "build.prepare event received" ) } );
     Sark->instance->on(
@@ -38,6 +39,12 @@ subtest "events" => sub {
         "Default build configuration has Docker engine as default" );
     ok( !$build->has_plugin("Docker"),
         "Default build configuration has no 'Docker' plugin" );
+
+    my $id  = $build->id;
+    my $id2 = Sark::Build->new->id;
+    my $ug  = Data::UUID->new;
+    ok( $ug->compare( $id, $id2 ) != 0,
+        "Different Builds objects generates differents UUIDs" );
 
 };
 
