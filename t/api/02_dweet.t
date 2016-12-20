@@ -12,15 +12,24 @@ subtest 'Sark::API::Interface::Dweet internals' => sub {
     my $thing = Sark::API::Interface::Dweet->new( thing => $uuid );
     $thing->dweet( this => { is => { real => "yes!" } } );
     my $dweet = $thing->latest();
-    ok( $dweet->{content}->{this}->{is}->{real} eq "yes!",
+    ok( exists $dweet->{content}->{this}->{is}->{real},
+        "Dweet successfully created and received."
+    );
+    is( $dweet->{content}->{this}->{is}->{real}, "yes!",
         "Dweet successfully created and received."
     );
     $thing->dweet( this => { is => { unreal => "no!" } } );
     my @test = $thing->dweets;
-    ok( $test[1]->{content}->{this}->{is}->{real} eq "yes!",
+    ok( exists $test[1]->{content}->{this}->{is}->{real},
         "Dweet successfully created and received."
     );
-    ok( $test[0]->{content}->{this}->{is}->{unreal} eq "no!",
+    ok( exists $test[0]->{content}->{this}->{is}->{unreal},
+        "Dweet successfully created and received."
+    );
+    is( $test[1]->{content}->{this}->{is}->{real}, "yes!",
+        "Dweet successfully created and received."
+    );
+    is( $test[0]->{content}->{this}->{is}->{unreal}, "no!",
         "Dweet successfully created and received."
     );
 };
