@@ -8,7 +8,7 @@ use URI::QueryParam;
 use LWP::UserAgent;
 use Carp;
 
-has "address" => 'https://dweet.io/';
+has "address" => 'https://dweet.io';
 has "thing"   => 'sarkdefault';
 
 has "ua" => sub {
@@ -20,7 +20,7 @@ has "ua" => sub {
 
 sub _uri {
     my ( $self, $rel, %options ) = @_;
-    my $uri = URI->new( $self->address . $rel . "/" . $self->thing );
+    my $uri = URI->new( $self->address . "/" . $rel . "/" . $self->thing );
     $uri->query_form(%options);
     return $uri;
 }
@@ -56,12 +56,6 @@ sub _parse_request {
     croak $message;
 }
 
-=method create
-
-Creates a container. You can specify the options as an hash, following the Docker API specifications.
-
-=cut
-
 sub dweet {
     my ( $self, %options ) = @_;
 
@@ -78,12 +72,6 @@ sub dweet {
     return $out;
 }
 
-=method ps
-
-Returns the running containers. You can specify the options as an hash, following the Docker API specifications.
-
-=cut
-
 sub latest {
     my ( $self, %options ) = @_;
     my $res = $self->_parse( '/get/latest/dweet/for/', %options );
@@ -98,6 +86,16 @@ sub dweets {
 
     return $res unless exists $res->{this} and $res->{this} eq "succeeded";
     return wantarray ? @{ $res->{with} } : $res->{with}->[0];
+}
+
+sub follow_link {
+    my ( $self, %options ) = @_;
+    return join( "/", $self->address, "follow", $self->thing );
+}
+
+sub dweets_link {
+    my ( $self, %options ) = @_;
+    return join( "/", $self->address, "get/dweets/for", $self->thing );
 }
 
 *uri = \&_uri;
