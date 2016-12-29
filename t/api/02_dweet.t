@@ -14,6 +14,9 @@ subtest 'Sark::API::Interface::Dweet internals' => sub {
     my $dweet      = $thing->latest();
     my $url        = $thing->follow_link();
     my $dweets_url = $thing->dweets_link();
+    $thing->dweet( this => { is => { unreal => "no!" } } );
+    my @test = $thing->dweets;
+
     is( $url,
         $thing->address . "/follow/" . $thing->thing,
         "Follow link is correct!"
@@ -29,8 +32,6 @@ subtest 'Sark::API::Interface::Dweet internals' => sub {
     );
     is( $dweet->{content}->{this}->{is}->{real},
         "yes!", "Dweet successfully created and received." );
-    $thing->dweet( this => { is => { unreal => "no!" } } );
-    my @test = $thing->dweets;
     ok( exists $test[1]->{content}->{this}->{is}->{real},
         "Dweet successfully created and received."
     );

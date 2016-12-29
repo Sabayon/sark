@@ -26,6 +26,18 @@ subtest 'Sark::Plugin::DweetBuild load' => sub {
         "Dweet successfully created and received."
     );
 
+    $build->compile("test");
+    $dweet = $thing->latest();
+    ok( $dweet->{content}->{status} eq "compile",
+        "Dweet successfully created and received."
+    );
+
+    $build->publish("test");
+    $dweet = $thing->latest();
+    ok( $dweet->{content}->{status} eq "publish",
+        "Dweet successfully created and received."
+    );
+
 };
 
 done_testing();
