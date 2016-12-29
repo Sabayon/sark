@@ -30,10 +30,26 @@ sub _parse {
     my $res = $self->ua->get( $self->_uri( $uri, %options ) );
     if ( $res->is_success ) {
         if ( $res->content_type eq 'application/json' ) {
-            return decode_json( $res->decoded_content );
+            my $data = decode_json( $res->decoded_content );
+            if (my $timed_out = _ratelimit(
+                    $data, sub { return $self->_parse( $uri, %options ) }
+                )
+                )
+            {
+                return $timed_out;
+            }
+            return $data;
         }
         elsif ( $res->content_type eq 'text/plain' ) {
-            return eval { decode_json( $res->decoded_content ) };
+            my $data = eval { decode_json( $res->decoded_content ) };
+            if (my $timed_out = _ratelimit(
+                    $data, sub { return $self->_parse( $uri, %options ) }
+                )
+                )
+            {
+                return $timed_out;
+            }
+            return $data;
         }
         elsif ( $res->content_type eq 'application/octet-stream' ) {
             return $res->content;
@@ -70,6 +86,18 @@ sub dweet {
     my $json = JSON->new;
     my $out  = $json->incr_parse( $res->decoded_content );
     return $out;
+}
+
+sub _ratelimit {
+    my ( $out, $func ) = @_;
+    if (    exists $out->{this}
+        and exists $out->{because}
+        and $out->{because} =~ /Rate limit/ )
+    {
+        sleep 1;
+        return $func->();
+    }
+    return;
 }
 
 sub latest {
