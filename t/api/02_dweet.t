@@ -28,20 +28,20 @@ subtest 'Sark::API::Interface::Dweet internals' => sub {
     diag(
         "You can check the test status on $url or all dweets at $dweets_url");
     ok( exists $dweet->{content}->{this}->{is}->{real},
-        "Dweet successfully created and received."
+        "Latest dweet content->this->is->real exists."
     );
     is( $dweet->{content}->{this}->{is}->{real},
-        "yes!", "Dweet successfully created and received." );
+        "yes!", "Latest dweet content content->this->is->real is 'yes!'" );
     ok( exists $test[1]->{content}->{this}->{is}->{real},
-        "Dweet successfully created and received."
+        "content->this->is->real exists as the last one dweet in the timeline."
     );
     ok( exists $test[0]->{content}->{this}->{is}->{unreal},
-        "Dweet successfully created and received."
+        "content->this->is->unreal exists as the first one dweet in the timeline (more recent). "
     );
     is( $test[1]->{content}->{this}->{is}->{real},
-        "yes!", "Dweet successfully created and received." );
+        "yes!", "content->this->is->real with content is 'yes!' as the last one dweet in the timeline." );
     is( $test[0]->{content}->{this}->{is}->{unreal},
-        "no!", "Dweet successfully created and received." );
+        "no!", "content->this->is->unreal with content is 'no!' as the last one dweet in the timeline." );
 };
 
 done_testing();
