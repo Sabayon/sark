@@ -38,10 +38,12 @@ subtest 'Sark::API::Interface::Dweet internals' => sub {
     ok( exists $test[0]->{content}->{this}->{is}->{unreal},
         "content->this->is->unreal exists as the first one dweet in the timeline (more recent). "
     );
-    is( $test[1]->{content}->{this}->{is}->{real},
-        "yes!", "content->this->is->real with content is 'yes!' as the last one dweet in the timeline." );
-    is( $test[0]->{content}->{this}->{is}->{unreal},
-        "no!", "content->this->is->unreal with content is 'no!' as the last one dweet in the timeline." );
+    is( $test[1]->{content}->{this}->{is}->{real}, "yes!",
+        "content->this->is->real with content is 'yes!' as the last one dweet in the timeline."
+    );
+    is( $test[0]->{content}->{this}->{is}->{unreal}, "no!",
+        "content->this->is->unreal with content is 'no!' as the last one dweet in the timeline."
+    );
 };
 
 done_testing();

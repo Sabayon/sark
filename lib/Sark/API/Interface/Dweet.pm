@@ -82,6 +82,11 @@ sub dweet {
         'Content-Type' => 'application/json',
         Content        => $input
     );
+    if ( my $timed_out =
+        _ratelimit( $res, sub { return $self->dweet(%options) } ) )
+    {
+        return $timed_out;
+    }
 
     my $json = JSON->new;
     my $out  = $json->incr_parse( $res->decoded_content );
