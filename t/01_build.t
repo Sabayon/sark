@@ -18,7 +18,8 @@ subtest "events" => sub {
     );
     Sark->instance->on( "build.compile" =>
             sub { is( $_[2], "compile", "build.compile event received" ) } );
-
+    Sark->instance->on( "build.start" =>
+            sub { is( $_[2], "start", "build.start event received" ) } );
     Sark->instance->on( "build.publish" =>
             sub { is( $_[2], "publish", "build.publish event received" ) } );
     Sark->instance->on(
@@ -31,6 +32,7 @@ subtest "events" => sub {
     $build->prepare("prepare");
     $build->pre_clean("pre_clean");
     $build->compile("compile");
+    $build->start("start");
     $build->publish("publish");
     $build->post_clean("post_clean");
     ok( $build->engines()->[0] eq "Docker",

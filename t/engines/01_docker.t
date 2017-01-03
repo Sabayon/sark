@@ -41,6 +41,16 @@ subtest "engines" => sub {
     );
 
     Sark->instance->on(
+        "engine.Docker.build.start" => sub {
+            isa_ok( $_[0], "Sark" );
+            isa_ok( $_[1], "Sark::Engine::Docker" );
+            isa_ok( $_[2], "Sark::Build" );
+            ok( $_[3] eq "start", "Sark::Build start()" );
+
+        }
+    );
+
+    Sark->instance->on(
         "engine.Docker.build.publish" => sub {
             isa_ok( $_[0], "Sark" );
             isa_ok( $_[1], "Sark::Engine::Docker" );
@@ -65,6 +75,7 @@ subtest "engines" => sub {
     $build->prepare("prepare");
     $build->pre_clean("pre_clean");
     $build->compile("compile");
+    $build->start("start");
     $build->publish("publish");
     $build->post_clean("post_clean");
 };

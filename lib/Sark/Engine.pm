@@ -3,10 +3,8 @@ package Sark::Engine;
 # ABSTRACT: ase class for Sark implementations
 
 use Sark;
-use Deeme::Obj -base;
-has [qw( name interface)];
-
-use Log::Log4perl;
+use Deeme::Obj 'Sark::Plugin';
+has [qw( interface )];
 
 =method register
 
@@ -55,6 +53,16 @@ sub register {
                 join( ".", "engine", $self->name, "build", "compile" ),
                 $self, @_ );
             $self->compile(@_);
+        }
+    );
+    $sark->on(
+        "build.start" => sub {
+            return unless ( $_[1]->has_engine( $self->name ) );
+            my $class = shift;
+
+            $sark->emit( join( ".", "engine", $self->name, "build", "start" ),
+                $self, @_ );
+            $self->start(@_);
         }
     );
     $sark->on(
@@ -129,6 +137,18 @@ sub compile {
     my $sark   = Sark->new();
     my $logger = Log::Log4perl->get_logger('Sark::Engine');
     $logger->warn("Compile method not implemented by engine");
+}
+
+=method start()
+
+The C<start> method is called to start the building process, using e.g. docker.
+
+=cut
+
+sub start {
+    my $sark   = Sark->new();
+    my $logger = Log::Log4perl->get_logger('Sark::Engine');
+    $logger->warn("Start method not implemented by engine");
 }
 
 =method publish()

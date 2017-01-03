@@ -14,7 +14,6 @@ has "interface" => sub {
 
 sub prepare {
     my ( $self, $build, @args ) = @_;
-
 }
 
 sub pre_clean {
@@ -25,6 +24,10 @@ sub pre_clean {
 sub compile {
     my ( $self, $build, @args ) = @_;
 
+}
+
+sub start {
+    my ( $self, $build, @args ) = @_;
 }
 
 sub publish {
