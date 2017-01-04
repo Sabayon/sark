@@ -3,7 +3,7 @@ package Sark::Utils;
 # ABSTRACT: Utility functions
 
 use base qw(Exporter);
-our @EXPORT_OK = qw(array_minus bool hash_getkey uniq);
+our @EXPORT_OK = qw(array_minus bool filewrite hash_getkey uniq);
 
 =func uniq( $value, ... )
 
@@ -73,6 +73,13 @@ sub hash_getkey {
 
     }
 
+}
+
+sub filewrite($$@) {
+    my ( $direction, $file, @content ) = @_;
+    open FILE, "${direction}${file}" or return undef;
+    print FILE @content;
+    close FILE;
 }
 
 1;

@@ -5,8 +5,33 @@ use strict;
 use Helpers;
 use Test::More;
 use Sark;
-use Sark::Utils qw(array_minus bool hash_getkey uniq);
+use Sark::Utils qw(array_minus bool filewrite hash_getkey uniq);
+use Test::TempDir::Tiny;
 
+subtest "filewrite" => sub {
+    my $dir = tempdir("foobar");
+    filewrite( ">", $dir . "/test", "whatever" );
+    ok( -e $dir . "/test", "filewrite correctly created file" );
+    open FILE, "<$dir/test";
+    my $content = <FILE>;
+    close FILE;
+
+    is( $content, "whatever",
+        "filewrite correctly created file with 'whatever' content" );
+    filewrite( ">>", "$dir/test", "2" );
+    open FILE, "<$dir/test";
+    $content = <FILE>;
+    close FILE;
+    is( $content, "whatever2",
+        "filewrite correctly appended file with '2' as content" );
+
+    filewrite( ">", $dir . "/test", "done" );
+    open FILE, "<$dir/test";
+    $content = <FILE>;
+    close FILE;
+    is( $content, "done", "filewrite correctly replaced file content" );
+
+};
 subtest "uniq" => sub {
     is_deeply( [ uniq() ],          [],  'Empty list' );
     is_deeply( [ sort( uniq(1) ) ], [1], 'Single element' );
