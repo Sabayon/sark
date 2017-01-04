@@ -8,6 +8,7 @@ has 'id' => sub {
     return $ug->create_str();
 };
 has "config" => sub { Sark->instance->{config}->search("build"); };
+has "target" => sub { Sark->instance->{config}->search("target"); };
 
 sub new {
     my $class = shift;
