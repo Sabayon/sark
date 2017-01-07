@@ -90,7 +90,7 @@ sub create {
 
     my $json = JSON->new;
     my $out  = $json->incr_parse( $res->decoded_content );
-    return $out->{Id};
+    return exists $out->{Id} ? $out->{Id} : $out;
 }
 
 =method commit
