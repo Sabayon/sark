@@ -5,19 +5,21 @@ use strict;
 use Helpers;
 use Test::More;
 use Sark;
-use Sark::Utils qw(array_minus bool filewrite hash_getkey uniq);
+use Sark::Utils
+    qw(array_minus bool filewrite hash_getkey uniq camelize decamelize);
 use Test::TempDir::Tiny;
 
 subtest "filewrite" => sub {
     my $dir = tempdir("foobar");
     filewrite( ">", $dir . "/test", "whatever" );
+
     ok( -e $dir . "/test", "filewrite correctly created file" );
     open FILE, "<$dir/test";
     my $content = <FILE>;
     close FILE;
-
     is( $content, "whatever",
         "filewrite correctly created file with 'whatever' content" );
+
     filewrite( ">>", "$dir/test", "2" );
     open FILE, "<$dir/test";
     $content = <FILE>;
@@ -117,6 +119,24 @@ subtest "hash_getkey" => sub {
     ok( $bar eq "bar",   "bar found inside data->foo" );
     ok( $null eq "null", "null found inside ba->bo->void" );
     is_deeply( $array, [ 1, 2, 3 ], "found test_array" );
+
+};
+
+subtest "camelize/decamelize" => sub {
+
+    # camelize
+    is camelize('foo_bar_baz'), 'FooBarBaz', 'right camelized result';
+    is camelize('FooBarBaz'),   'FooBarBaz', 'right camelized result';
+    is camelize('foo_b_b'),     'FooBB',     'right camelized result';
+    is camelize('foo-b_b'),     'Foo::BB',   'right camelized result';
+    is camelize('FooBar'),      'FooBar',    'already camelized';
+    is camelize('Foo::Bar'),    'Foo::Bar',  'already camelized';
+
+    # decamelize
+    is decamelize('FooBarBaz'),   'foo_bar_baz', 'right decamelized result';
+    is decamelize('foo_bar_baz'), 'foo_bar_baz', 'right decamelized result';
+    is decamelize('FooBB'),       'foo_b_b',     'right decamelized result';
+    is decamelize('Foo::BB'),     'foo-b_b',     'right decamelized result';
 
 };
 

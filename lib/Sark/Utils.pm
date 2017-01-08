@@ -3,7 +3,8 @@ package Sark::Utils;
 # ABSTRACT: Utility functions
 
 use base qw(Exporter);
-our @EXPORT_OK = qw(array_minus bool filewrite hash_getkey uniq);
+our @EXPORT_OK =
+    qw(array_minus bool camelize decamelize filewrite hash_getkey uniq);
 
 =func uniq( $value, ... )
 
@@ -80,6 +81,27 @@ sub filewrite($$@) {
     open FILE, "${direction}${file}" or return undef;
     print FILE @content;
     close FILE;
+}
+
+# From Mojo::Utility
+sub camelize {
+    my $str = shift;
+    return $str if $str =~ /^[A-Z]/;
+
+    # CamelCase words
+    return join '::', map {
+        join( '', map { ucfirst lc } split '_' )
+    } split '-', $str;
+}
+
+sub decamelize {
+    my $str = shift;
+    return $str if $str !~ /^[A-Z]/;
+
+    # snake_case words
+    return join '-', map {
+        join( '_', map {lc} grep {length} split /([A-Z]{1}[^A-Z]*)/ )
+    } split '::', $str;
 }
 
 1;
