@@ -6,6 +6,7 @@ use Helpers;
 use Test::More;
 use Sark;
 use Sark::Build;
+use Test::TempDir::Tiny;
 
 # Testing compile and test events
 subtest "events" => sub {
@@ -35,10 +36,11 @@ subtest "events" => sub {
     $build->start("start");
     $build->publish("publish");
     $build->post_clean("post_clean");
-    ok( $build->engines()->[0] eq "Docker",
-        "Default build configuration has Docker engine as default" );
-    ok( $build->has_engine("Docker"),
-        "Default build configuration has Docker engine as default" );
+
+    #ok( $build->engines()->[0] eq "Docker",
+    #    "Default build configuration has Docker engine as default" );
+    ok( !$build->has_engine("Docker"),
+        "Default build configuration doesn't have Docker engine loaded" );
     ok( !$build->has_plugin("Docker"),
         "Default build configuration has no 'Docker' plugin" );
 

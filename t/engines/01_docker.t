@@ -7,6 +7,19 @@ use Test::More;
 use Sark;
 use Sark::Build;
 
+my $api;
+my $checkv;
+eval {
+    $api    = Sark::API::Interface::Docker->new();
+    $checkv = $api->version()->{Version};
+};
+
+if ( !$api or $@ or !$checkv ) {
+    diag("SKIPPED");
+    plan skip_all =>
+        'No Docker daemon running on machine, or cannot connect to it from the current user';
+}
+
 subtest "engines" => sub {
 
     Sark->instance->load_engine("Docker");

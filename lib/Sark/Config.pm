@@ -248,8 +248,7 @@ phases:
   metadata: true
   deploy: false
 build:
-  engines:
-    - Docker
+  engines: []
   plugins: []
 docker:
   connection: "http:/var/run/docker.sock/"
