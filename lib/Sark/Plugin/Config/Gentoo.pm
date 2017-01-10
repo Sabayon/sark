@@ -1,11 +1,7 @@
 package Sark::Plugin::Config::Gentoo;
 use Deeme::Obj 'Sark::Plugin';
 use Sark;
-use Log::Log4perl;
 use Sark::Utils qw(bool decamelize);
-
-has "logger" =>
-    sub { Log::Log4perl->get_logger('Sark::Plugin::Config::Gentoo'); };
 
 has events => sub {
     {   "build.prepare" => sub {

@@ -56,9 +56,9 @@ sub post_clean { Sark->instance->emit( "build.post_clean", @_ ); }
 
 sub bail_out { Sark->instance->emit( "build.failed", @_ ); }
 
-sub engines { my $self = shift; return $self->_config->{engines}; }
+sub engines { shift->_config->{engines}; }
 
-sub plugins { my $self = shift; return $self->_config->{plugins}; }
+sub plugins { shift->_config->{plugins}; }
 
 sub enable_plugin {
     my ( $self, $Plugin ) = @_;
@@ -78,6 +78,6 @@ sub enable_engine {
     return $self;
 }
 
-sub docker { my $self = shift; return $self->_config->{docker}; }
+sub docker { shift->_config->{docker}; }
 
 1;
