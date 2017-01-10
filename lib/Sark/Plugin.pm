@@ -8,6 +8,13 @@ has [qw( name events )];
 use Log::Log4perl;
 use Sark::Utils qw(camelize decamelize);
 
+has logger => sub {
+    my $self  = shift;
+    my $class = "$self";
+    $class =~ s/\=.*//g;
+    return Log::Log4perl->get_logger($class);
+};
+
 sub register {
     my ( $self, $sark ) = @_;
     return unless ref( $self->events() ) eq "HASH";
