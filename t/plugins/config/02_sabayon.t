@@ -11,7 +11,6 @@ use Sark::Build;
 subtest "load Config::Sabayon and parse config" => sub {
     Sark->instance()->load_plugin("Config::Sabayon");
     my $build = Sark::Build->new;
-    $build->enable_plugin("Config::Sabayon");
     $build->_config->{equo}->{dependency_install}->{enable} = "true";
     $build->prepare();
     is( $build->config->get("USE_EQUO"), 1, "USE_EQUO is set to 1" );

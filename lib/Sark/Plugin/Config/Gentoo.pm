@@ -16,12 +16,6 @@ sub register {
 
     $sark->on(
         "build.prepare" => sub {
-
-# First make sure engine has been explictly selected inside the build configuration.
-# This avoids that all loaded engines are enabled for all builds(allowing parallel execution)
-            return
-                unless ( $_[1]->has_plugin( $self->name ) )
-                ;    #$_[1] is the Sark::Build in this case
             my $build = $_[1];
 
             my $yaml = $build->_config;

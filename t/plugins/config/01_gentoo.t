@@ -11,7 +11,6 @@ use Sark::Build;
 subtest "load Config::Gentoo and parse config" => sub {
     Sark->instance()->load_plugin("Config::Gentoo");
     my $build = Sark::Build->new;
-    $build->enable_plugin("Config::Gentoo");
     $build->_config->{emerge}->{split_install} = 1;
     $build->prepare();
     is( $build->config->get("EMERGE_SPLIT_INSTALL"),
