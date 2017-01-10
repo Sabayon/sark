@@ -4,18 +4,11 @@ use Sark;
 use Log::Log4perl;
 use Sark::Utils qw(bool decamelize);
 
-has "name" => "Config::Gentoo";
 has "logger" =>
     sub { Log::Log4perl->get_logger('Sark::Plugin::Config::Gentoo'); };
 
-sub register {
-    my ( $self, $sark ) = @_;
-
-    $sark->emit(
-        join( ".", "plugin", decamelize( $self->name ), "register" ) );
-
-    $sark->on(
-        "build.prepare" => sub {
+has events => sub {
+    {   "build.prepare" => sub {
             my $build = $_[1];
 
             my $yaml = $build->_config;
@@ -36,8 +29,8 @@ sub register {
                 if exists $yaml->{equo}->{dependency_install}
                 ->{dependency_scan_depth};
         }
-    );
+    };
 
-}
+};
 
 1;

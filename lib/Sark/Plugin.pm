@@ -4,9 +4,29 @@ package Sark::Plugin;
 
 use Sark;
 use Deeme::Obj -base;
-has [qw( name )];
+has [qw( name events )];
 use Log::Log4perl;
+use Sark::Utils qw(camelize decamelize);
 
+sub register {
+    my ( $self, $sark ) = @_;
+    return unless ref( $self->events() ) eq "HASH";
+
+    if ( !$self->name ) {
+        my $class = "$self";
+        $class =~ s/\=.*//g;
+        my @c = split( /::/, $class );
+        $self->name( camelize( join( "::", @c[ 2 .. $#c ] ) ) );
+    }
+    $sark->emit(
+        join( ".", "plugin", decamelize( $self->name ), "register" ) );
+
+    my @events = keys %{ $self->events() };
+
+    foreach my $e (@events) {
+        $sark->on( $e => $self->events()->{$e} );
+    }
+}
 1;
 
 __END__

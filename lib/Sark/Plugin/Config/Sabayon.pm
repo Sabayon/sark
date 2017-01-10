@@ -4,18 +4,11 @@ use Sark;
 use Log::Log4perl;
 use Sark::Utils qw(bool decamelize);
 
-has "name" => "Config::Sabayon";
 has "logger" =>
     sub { Log::Log4perl->get_logger('Sark::Plugin::Config::Sabayon'); };
 
-sub register {
-    my ( $self, $sark ) = @_;
-
-    $sark->emit(
-        join( ".", "plugin", decamelize( $self->name ), "register" ) );
-
-    $sark->on(
-        "build.prepare" => sub {
+has events => sub {
+    {   "build.prepare" => sub {
 
             my $build = $_[1];
 
@@ -36,8 +29,7 @@ sub register {
                 exists $yaml->{equo}->{dependency_install}->{install_atoms};
 
         }
-    );
-
-}
+    };
+};
 
 1;
