@@ -12,7 +12,6 @@ has 'id' => sub {
 };
 has "config"  => sub { Sark::Build::Config->new; };
 has "_config" => sub { Sark->instance->{config}->search("build"); };
-
 has "target" => sub { Sark->instance->{config}->search("target"); };
 
 sub new {
@@ -64,8 +63,7 @@ sub enable_plugin {
     my ( $self, $Plugin ) = @_;
     $Plugin = camelize($Plugin);
     return $self unless !$self->has_plugin($Plugin);
-    $self->_config->{plugins} =
-        [ @{ $self->_config->{plugins} }, $Plugin ];
+    push(@{ $self->_config->{plugins} }, $Plugin);
     return $self;
 }
 
@@ -73,8 +71,7 @@ sub enable_engine {
     my ( $self, $Engine ) = @_;
     $Engine = camelize($Engine);
     return $self unless !$self->has_engine($Engine);
-    $self->_config->{engines} =
-        [ @{ $self->_config->{engines} }, $Engine ];
+    push(@{ $self->_config->{engines} }, $Engine);
     return $self;
 }
 
